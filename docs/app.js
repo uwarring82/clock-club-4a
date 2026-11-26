@@ -129,6 +129,7 @@ function askPlace(){
     btn("dismiss","Weiter mit "+skyPlace[0]));
 }
 function choosePlace(place){
+  if(place!==skyPlace)disableWeather();
   placeRequest++;skyPlace=place;skyDayShift=0;
   $("helpDialog").close();render();
 }
@@ -157,6 +158,8 @@ function workshop(){
   const t=data.work, sky=localSky(t);
   return '<section class="day-room" id="dayRoom" style="'+workshopSky(t,sky)+'" aria-label="Uhrenwerkstatt">'+
     '<div class="sky-lights" aria-hidden="true"><i class="work-sun"></i><svg class="work-moon" viewBox="-11 -11 22 22"><g id="moonLimb">'+moonShape(sky)+'</g></svg></div>'+
+    '<div id="weatherLayer" class="work-weather" aria-hidden="true"></div>'+
+    '<small class="weather-credit" id="weatherCredit" hidden><span id="weatherCaption"></span>Wettermodell: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></small>'+
     '<button class="work-location" data-action="place" aria-label="Spielort ändern">'+skyPlace[0]+'</button><a class="work-exit" href="#raeume">‹ Lernräume</a><div class="day-clock">'+
     '<svg class="work-dial" viewBox="170 59 220 220" role="img" aria-labelledby="dialDesc"><title id="dialDesc">Uhrzeit '+clock24(t)+'</title>'+
     '<circle cx="280" cy="169" r="104" fill="#faf8ed" stroke="#4b4c58" stroke-width="4"/><g class="dial-text">'+labels+'</g><g id="hands">'+hands(t)+'</g>'+
@@ -164,7 +167,10 @@ function workshop(){
     '<div class="work-caption"><div id="workReadings" class="work-readings">'+workshopReadings(t)+'</div>'+
     '<button class="work-listen" data-action="listen" aria-label="Englische Uhrzeit anhören">'+icon("sound")+'<span lang="en" id="workPhrase">'+words(t)+'</span></button></div></div>'+
     '<details class="work-tools"><summary>Uhr einstellen</summary><div><p id="skyDescription">'+skyDescription(sky)+'</p>'+handControls(workshopHand)+
-    btn("midnight","00:00 · Midnight")+btn("noon","12:00 · Noon / High noon")+'</div></details></section>';
+    btn("midnight","00:00 · Midnight")+btn("noon","12:00 · Noon / High noon")+
+    '<div class="weather-settings"><label><input id="weatherToggle" type="checkbox" '+(weather.enabled?'checked':'')+'> Wetter im Himmel zeigen</label>'+
+    '<small>Dafür wird der ungefähre Spielort an Open-Meteo gesendet.</small><span id="weatherNote"></span>'+
+    '<button type="button" data-action="weather-retry" id="weatherRetry" hidden>Wetter aktualisieren</button></div></div></details></section>';
 }
 function stage(){
   const phase=data.phase,t=data.stage;
@@ -238,6 +244,7 @@ function render(){
   const toolsOpen=state.page==="werkstatt" && main.querySelector(".work-tools")?.open;
   main.dataset.page=state.page;
   main.innerHTML=practice()?game():pages[state.page]();
+  if(state.page==="werkstatt")refreshWeather();
   if(toolsOpen)main.querySelector(".work-tools").open=true;
   document.querySelectorAll("[data-nav]").forEach(a=>{
     const currentNav=a.dataset.nav===state.page || (a.dataset.nav==="raeume" && Object.hasOwn(roomNames,state.page));
@@ -285,6 +292,7 @@ function updateHands(q){
     $("dayRoom").setAttribute("style",workshopSky(q.draw,sky));
     $("moonLimb").innerHTML=moonShape(sky);
     $("skyDescription").textContent=skyDescription(sky);
+    refreshWeather(sky);
     $("workReadings").innerHTML=workshopReadings(q.draw);
     $("workPhrase").textContent=words(q.draw);
   }
@@ -416,7 +424,7 @@ function resetDevice(){
   state.scores=empty;
   Object.assign(data,{last:null,rounds:{},history:{},work:{h:3,m:0},stage:{h:3,m:0},phase:0});
   state.page="eingang";state.mode="read";state.level=0;workshopHand="hour";guide=null;
-  skyPlace=skyPlaces[0];skyDayShift=0;askedForPlace=false;placeRequest++;
+  disableWeather();skyPlace=skyPlaces[0];skyDayShift=0;askedForPlace=false;placeRequest++;
   saveStars();save();$("helpDialog").close();location.hash="eingang";
 }
 function listen(slow){
@@ -436,6 +444,11 @@ function nextQuestion(){
   if(window.matchMedia?.("(max-width: 720px)").matches)main.querySelector(".play-grid,.round-end")?.scrollIntoView({block:"start"});
 }
 main.addEventListener("change",e=>{
+  if(e.target.id==="weatherToggle"){
+    if(e.target.checked)fetchWeather();
+    else{disableWeather();refreshWeather();}
+    return;
+  }
   if(e.target.id!=="level")return;
   clearAudio();state.level=Number(e.target.value);
   if(state.page==="sprechbuehne")nextStageTime();
@@ -444,6 +457,7 @@ main.addEventListener("change",e=>{
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   const d=b.dataset,action=d.action;
+  if(action==="weather-retry" && weather.enabled){fetchWeather();return;}
   if(action==="place"){askPlace();return;}
   if(action==="use-city"){choosePlace(skyPlaces[Number($("skyCity").value)]);return;}
   if(action==="use-device"){locateDevice();return;}

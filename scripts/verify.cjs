@@ -22,7 +22,7 @@ const env = {
     speechSynthesis:{cancel(){},getVoices:()=>[{lang:"en-GB",localService:true}],speak:u=>speech.push(u)}},
   assert,playback,speech
 };
-const scripts=["suncalc","sky","clock","learning","audio","app"].map(name=>fs.readFileSync("docs/"+name+".js","utf8"));
+const scripts=["suncalc","sky","weather","clock","learning","audio","app"].map(name=>fs.readFileSync("docs/"+name+".js","utf8"));
 vm.runInNewContext(scripts.join("\n"),env);
 vm.runInNewContext(`
 assert.equal(scoreTotal(),2);
@@ -178,6 +178,14 @@ const full=localSky({h:2,m:0,pm:true},ny,Date.parse("2024-04-23T18:00:00Z"),0);
 assert.ok(full.percent>99);
 assert.ok(observingTime({h:2,m:30,pm:false},skyPlaces[0],Date.parse("2026-03-29T12:00Z"),0).gap);
 assert.ok(observingTime({h:2,m:30,pm:false},skyPlaces[0],Date.parse("2026-10-25T12:00Z"),0).fold);
+// One UTC forecast hour can span many different minute readings.
+const stamp=Date.parse("2026-11-26T10:00:00Z")/1000;
+weather.hours=readForecast({time:[stamp,stamp+3600,stamp+7200],weather_code:[61,71,null],cloud_cover:[88,95,20],temperature_2m:[4,-1,null]});
+weather.enabled=true;
+const forecastAt=(s,gap=false)=>weatherFor({date:new Date(s*1000),gap});
+assert.equal(forecastAt(stamp+3599).effect,"rain");assert.equal(forecastAt(stamp+3600).effect,"snow");
+assert.equal(forecastAt(stamp+7200),null);assert.equal(forecastAt(stamp,true),null);
+disableWeather();assert.equal(forecastAt(stamp),null);
 resetDevice();assert.equal(scoreTotal(),0);assert.deepEqual(Object.keys(loadLearning().history),[]);
 assert.equal(loadLearning().last,null);
 `,env);
