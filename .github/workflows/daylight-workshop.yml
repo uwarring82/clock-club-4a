@@ -36,6 +36,7 @@ jobs:
                 const touch=width<500?await page.context().newCDPSession(page):null;
                 async function sendTouch(type,pt){
                   await touch.send('Input.dispatchTouchEvent',{type,touchPoints:pt?[{x:pt.x,y:pt.y}]:[]});
+                  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
                 }
                 if(touch)await sendTouch('touchStart',pos);
                 else{await page.mouse.move(pos.x,pos.y);await page.mouse.down();}
