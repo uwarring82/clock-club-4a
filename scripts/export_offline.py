@@ -31,6 +31,8 @@ def build():
             name = f"{hour}-{minute}"
             clips[name] = data_uri(SITE / "audio" / f"{name}.mp3", "audio/mpeg")
 
+    clips['welcome'] = data_uri(SITE / 'audio/welcome.mp3', 'audio/mpeg')
+
     names = ("clock", "learning", "audio", "app")
     scripts = "const embeddedAudio=" + json.dumps(clips, separators=(",", ":")) + ";\n"
     scripts += "\n".join((SITE / f"{name}.js").read_text() for name in names)

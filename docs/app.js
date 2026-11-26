@@ -45,7 +45,7 @@ function hero(title,sub,levelControl=false){
 }
 function entrance(){
   return '<section class="welcome"><div class="welcome-copy"><div class="eyebrow">'+icon("cap")+' ENGLISCH · KLASSE 4A</div><h1 lang="en">Welcome to <br>Clock Club<span>!</span></h1><p>Wie spät ist es auf Englisch? Öffne die Tür und probiere es aus.</p><div class="entry-actions">'+
-    roomLink(data.last?.page||"raetselraum",icon("game")+"Direkt spielen","primary")+roomLink("ankommen","Hilf mir beim Einstieg")+
+    roomLink(data.last?.page||"raetselraum",icon("game")+"Direkt spielen","primary")+roomLink("ankommen","Hilf mir beim Einstieg")+btn("welcome",icon("sound")+" Begrüßung anhören")+
     '</div></div><div class="house-art"><img src="assets/clubhouse.svg" alt="Das Clubhaus mit einer Uhr über der offenen Tür"></div></section>';
 }
 const roomIcons={werkstatt:"clock",hoerhoehle:"headphones",sprechbuehne:"sound",raetselraum:"game"};
@@ -308,6 +308,7 @@ main.addEventListener("change",e=>{
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   const d=b.dataset,action=d.action;
+  if(action==="welcome"){playWelcome();return;}
   if(b.id==="closeHelp"||action==="dismiss"){$("helpDialog").close();render();return;}
   if(d.word!==undefined||d.slowWord!==undefined){play(vocabulary[Number(d.word??d.slowWord)][2],d.slowWord!==undefined);return;}
   const q=activeQuestion();
@@ -345,3 +346,4 @@ window.addEventListener("storage",e=>{
   if(e.key===key||e.key===learningKey)render();
 });
 route();
+if(state.page==="eingang")playWelcome();

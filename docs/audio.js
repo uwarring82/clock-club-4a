@@ -39,3 +39,14 @@ function play(t, slow=false) {
   player.playbackRate = slow ? 0.8 : 1;
   player.play().catch(fallback);
 }
+
+function playWelcome() {
+  stopAudio();
+  const id = playbackId;
+  player.src = typeof embeddedAudio === "undefined" ? "audio/welcome.mp3" : embeddedAudio.welcome;
+  player.playbackRate = 1;
+  player.play().catch(error => {
+    if (id !== playbackId || error.name === "AbortError" || error.name === "NotAllowedError") return;
+    say("Begrüßung nicht verfügbar.");
+  });
+}
