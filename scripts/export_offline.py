@@ -31,16 +31,14 @@ def build():
             name = f"{hour}-{minute}"
             clips[name] = data_uri(SITE / "audio" / f"{name}.mp3", "audio/mpeg")
 
-    app = (SITE / "app.js").read_text()
-    source = 'audio.src="audio/"+time.h+"-"+time.m+".mp3"'
-    if app.count(source) != 1:
-        raise ValueError("Update the standalone audio mapping to match app.js")
-    app = app.replace(source, 'audio.src=clips[time.h+"-"+time.m]')
-    scripts = (SITE / "clock.js").read_text() + "\nconst clips=" + json.dumps(clips, separators=(",", ":")) + ";\n" + app
+    names = ("clock", "learning", "audio", "app")
+    scripts = "const embeddedAudio=" + json.dumps(clips, separators=(",", ":")) + ";\n"
+    scripts += "\n".join((SITE / f"{name}.js").read_text() for name in names)
+    scripts = scripts.replace("assets/clubhouse.svg", data_uri(SITE / "assets/clubhouse.svg", "image/svg+xml"))
 
     html = (SITE / "index.html").read_text().replace("assets/club.svg", data_uri(SITE / "assets" / "club.svg", "image/svg+xml"))
     html = html.replace('<link rel="stylesheet" href="style.css">', f"<style>{css}</style>")
-    for name in ("clock", "app"):
+    for name in names:
         html = html.replace(f'<script src="{name}.js" defer></script>', "")
     license_text = (SITE / "assets" / "Rubik-license.txt").read_text()
     html = html.replace("</body>", f'<script>{scripts}</script>\n<script type="text/plain" id="font-license">{license_text}</script>\n</body>')

@@ -55,10 +55,13 @@ function hands(time){
  '<g transform="rotate('+minuteAngle+' 280 169)"><path d="M277.4 181 277.7 95l2.3-7 2.4 7 .3 86q-2.7 4-5.3 0Z" fill="#ed9366" stroke="#784736" stroke-width="2.2"/></g>'+
  '<circle cx="280" cy="169" r="7.5" stroke="#42374b" stroke-width="2.6" fill="#f9cd7e"/><circle cx="280" cy="169" r="2.2" fill="#67505a"/>';
 }
-function clockArt(time,hidden,editable){
+function clockArt(time,hidden,editable,withWords=false){
+ const [x,y]=point((time.h%12)*30,60);
+ const word=withWords?'<g aria-hidden="true"><rect x="'+(x-19)+'" y="'+(y-6)+'" width="38" height="13" rx="5" fill="#f1e8f8"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="10" fill="#594278">'+hourNames[time.h%12]+'</text></g>':"";
+
  const desc=hidden?'Die Zeiger erscheinen nach der Hörübung.':'Kurzer Zeiger auf Stunde '+time.h+', langer Zeiger auf '+(time.m/5||12)+'.';
  return '<svg class="alarm-art" viewBox="0 0 560 314" role="img" aria-labelledby="dialDesc"><title id="dialDesc">'+desc+'</title>'+ornaments+dialShell+
  (hidden?'<g fill="#c9bcd8"><circle cx="280" cy="169" r="46" fill="#efe8f1"/><path d="m265 161 9 .1 12-9v33l-12-9h-9z" fill="#8065a5"/><path d="M292 157q12 12 0 24" fill="none" stroke="#8065a5" stroke-width="4" stroke-linecap="round"/></g>':
- '<g class="dial-text">'+labels+'</g><g id="hands">'+hands(time)+'</g>')+
+ '<g class="dial-text">'+labels+'</g><g id="hands">'+hands(time)+'</g>'+word)+
  (editable?'<circle id="drawSurface" cx="280" cy="169" r="104" fill="transparent" />':'')+'</svg>';
 }
