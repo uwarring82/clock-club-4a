@@ -8,7 +8,7 @@ Jede gelöste Aufgabe gibt einen Stern. Im Üben vorgemerkte Uhrzeiten kommen in
 
 ## Hörbeispiele
 
-Alle 144 englischen Sätze sind als MP3 enthalten. Die synthetische Stimme Marian (Speechify, britisches Englisch) spricht alle Uhrzeiten. Das Spiel nutzt zuerst die Datei und bei einem Wiedergabefehler die englische Sprachausgabe des Geräts. „Langsam“ verwendet dieselbe Aufnahme mit 0,8-facher Geschwindigkeit. Ein Hörtest für den Vergleich mit menschlichen Aufnahmen steht im [Aufnahmeblatt](AUFNAHMEPROBE.md).
+Die Uhrenwerkstatt lässt sich minutengenau einstellen. Die digitale Anzeige unterscheidet 00:00 Uhr (midnight) und 12:00 Uhr (noon, auch high noon). Alle 720 Uhrzeiten, beide Tageszeiten und die Begrüßung liegen als MP3 vor und sind in der Offline-Fassung eingebettet. Die Übungen verwenden daraus die 144 Uhrzeiten im Fünf-Minuten-Raster. Die synthetische Stimme Marian (Speechify, britisches Englisch) spricht alle Uhrzeiten. Das Spiel nutzt zuerst die Datei und bei einem Wiedergabefehler die englische Sprachausgabe des Geräts. „Langsam“ verwendet dieselbe Aufnahme mit 0,8-facher Geschwindigkeit. Ein Hörtest für den Vergleich mit menschlichen Aufnahmen steht im [Aufnahmeblatt](AUFNAHMEPROBE.md).
 
 ## Bearbeiten und veröffentlichen
 
