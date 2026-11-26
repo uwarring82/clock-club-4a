@@ -156,7 +156,7 @@ function minuteEvent(tick){
 }
 surface.onpointerdown(minuteEvent(58));
 for(let minute=59;minute<=178;minute++)surface.onpointermove(minuteEvent(minute));
-assert.equal(clock24(data.work),"01:58");assert.equal(element.textContent.includes("undefined"),false);
+assert.equal(clock24(data.work),"01:58");assert.equal($("workPhrase").textContent,words(data.work));
 for(let minute=177;minute>=58;minute--)surface.onpointermove(minuteEvent(minute));
 surface.onpointerup(minuteEvent(58));
 assert.equal(clock24(data.work),"23:58");
