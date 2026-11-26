@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#faf9f5">
+<meta name="description" content="Entdecke die Uhr und lerne englische Uhrzeiten. Mit einer bunten Lernuhr, Hörspielen und Übungen zum Zeigerzeichnen für die 4. Klasse.">
+<title>Clock Club · Telling the Time</title>
+<link rel="icon" href="assets/club.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script src="clock.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Zum Spiel</a>
+<header class="site-header">
+ <div class="header-inner">
+  <a class="brand" href="#spielplatz" aria-label="Clock Club – zum Spielplatz"><img src="assets/club.svg" width="46" height="46" alt=""><span lang="en">Clock Club</span></a>
+  <nav aria-label="Hauptnavigation"><a href="#spielplatz" data-nav="spielplatz"><i data-icon="game"></i>Spielplatz</a><a href="#wortschatz" data-nav="wortschatz"><i data-icon="book"></i>Wortschatz</a></nav>
+  <a class="star-bank" href="#sterne" data-nav="sterne"><i data-icon="star"></i><span id="starCount">0 Sterne</span></a>
+ </div>
+</header>
+<main id="content" tabindex="-1"></main>
+<div class="footer"><span lang="en">Clock Club</span><span>Englisch für die 4. Klasse</span></div>
+<dialog id="helpDialog" aria-labelledby="helpTitle"><button class="dialog-close icon-button" id="closeHelp" aria-label="Schließen"><i data-icon="close"></i></button><div id="helpBody"></div></dialog>
+<p class="sr-only" id="announcer" aria-live="polite" aria-atomic="true"></p>
+<noscript>Bitte aktiviere JavaScript, um mit der Lernuhr zu spielen.</noscript>
+</body>
+</html>
