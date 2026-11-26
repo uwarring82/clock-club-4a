@@ -218,8 +218,8 @@ function makeRound(mode,level,history,first=false) {
   return {idx:0,done:false,items};
 }
 function suggestedRoom({read,whole,quarter,set}) {
-  if (whole!==true) return {page:"hoerhoehle",level:0,why:"Fang in der Hörhöhle mit vollen Stunden an. Hör auf die Zahl vor „o’clock“."};
   if (read===false || set===false) return {page:"werkstatt",level:0,why:"Drehe die Zeiger selbst. Du siehst und hörst, wie sich die Zeit verändert."};
+  if (whole!==true) return {page:"hoerhoehle",level:0,why:"Fang in der Hörhöhle mit vollen Stunden an. Hör auf die Zahl vor „o’clock“."};
   if (quarter!==true) return {page:"hoerhoehle",level:1,why:"In der Hörhöhle kannst du „quarter past“ und „quarter to“ langsam anhören und vergleichen."};
   if (read===true && set===true) return {page:"raetselraum",level:1,why:"Du hast die Uhr gelesen, gehört und gestellt. Probier eine Runde mit halben und Viertelstunden."};
   return {page:"raetselraum",level:0,why:"Starte mit fünf kleinen Rätseln zu vollen Stunden. Du kannst den Raum jederzeit wechseln."};
@@ -550,8 +550,11 @@ function check(){
   }
   recordMiss(data.history,q);
   if(puzzle())q.feedback="Probier es noch einmal.";
-  else if(q.kind==="hear" && q.target.m>30 && actual.h===normHour(q.target.h+1) && actual.m===q.target.m)
-    q.feedback="Bei „to“ hörst du die nächste volle Stunde. Welche Stunde läuft jetzt noch?";
+  else if(q.kind==="hear" && q.target.m>30 && actual.h===normHour(q.target.h+1) && actual.m===q.target.m){
+    const hourIndex=actual.h%12;
+    const germanHour=["zwölf","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf"][hourIndex];
+    q.feedback="Bei „to "+hourNames[hourIndex]+"“ wird es gleich "+germanHour+". Es ist also noch vor "+germanHour+".";
+  }
   else if(q.kind==="hear")q.feedback="Hör noch einmal hin. Mit der Schnecke spricht die Stimme langsamer.";
   else if(q.kind==="set")q.feedback=actual.m!==q.target.m?"Schau auf den langen Zeiger. Zähle in Fünferschritten.":"Der lange Zeiger passt. Schau noch einmal auf die Stunde.";
   else q.feedback=actual.m===q.target.m?"Schau noch einmal auf den kurzen Zeiger. Er zeigt die Stunde.":"Zähle die Minuten am langen Zeiger in Fünferschritten.";

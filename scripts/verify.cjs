@@ -70,12 +70,20 @@ function guidePath(read,whole,quarter,set){
   const rec=suggestedRoom(guide.results);
   return [rec.page,rec.level].join("/");
 }
-assert.equal(guidePath(true,false,null,true),"hoerhoehle/0");
-assert.equal(guidePath(null,null,null,null),"hoerhoehle/0");
-assert.equal(guidePath(true,true,false,true),"hoerhoehle/1");
-assert.equal(guidePath(true,true,null,true),"hoerhoehle/1");
-assert.equal(guidePath(true,true,true,true),"raetselraum/1");
-assert.equal(guidePath(false,true,true,true),"werkstatt/0");
+// The five reachable listening outcomes crossed with the nine reading/setting pairs.
+const listeningPaths=[[false,null],[null,null],[true,false],[true,null],[true,true]];
+const workshopOutcomes=Array(5).fill("werkstatt/0");
+const hearing=["hoerhoehle/0","hoerhoehle/0","hoerhoehle/1","hoerhoehle/1"];
+for(const [read,set,expected] of [
+  [false,false,workshopOutcomes], [false,true,workshopOutcomes], [false,null,workshopOutcomes],
+  [true,false,workshopOutcomes], [null,false,workshopOutcomes],
+  [true,true,[...hearing,"raetselraum/1"]], [null,null,[...hearing,"raetselraum/0"]],
+  [true,null,[...hearing,"raetselraum/0"]], [null,true,[...hearing,"raetselraum/0"]]
+]){
+  listeningPaths.forEach(([whole,quarter],i)=>{
+    assert.equal(guidePath(read,whole,quarter,set),expected[i],JSON.stringify({read,set,whole,quarter}));
+  });
+}
 assert.equal(scoreTotal(),2);assert.equal(Object.keys(data.history).length,0);
 for(let h=1;h<=12;h++)for(const m of [35,40,45,50,55]){
   for(const kind of kinds){
@@ -89,7 +97,7 @@ state.page="hoerhoehle";state.mode="hear";state.level=1;
 const r=newRound();
 const q=r.items[0]=makeQuestion({h:2,m:45},"hear");
 q.selected=q.options.findIndex(t=>t.h===3&&t.m===45);check();
-assert.match(q.feedback,/nächste volle Stunde/);
+assert.equal(q.feedback,"Bei „to three“ wird es gleich drei. Es ist also noch vor drei.");
 assert.equal(q.mistakes,1);assert.equal(scoreTotal(),2);
 q.selected=q.options.findIndex(t=>sameTime(t,q.target));check();check();
 assert.equal(scoreTotal(),3);
@@ -102,6 +110,11 @@ recordSolution(data.history,repeat);assert.equal(data.history[id].review,false);
 const withHelp=makeQuestion({h:11,m:45},"set");withHelp.assisted=true;
 recordSolution(data.history,withHelp);assert.equal(data.history["set/11:45"].help,1);
 assert.equal(loadLearning().rounds.hear1.items[0].solved,true);
+for(const [h,en,de] of [[11,"twelve","zwölf"],[12,"one","eins"]]){
+  const item=r.items[0]=makeQuestion({h,m:45},"hear");
+  item.selected=item.options.findIndex(t=>t.h===normHour(h+1)&&t.m===45);check();
+  assert.ok(item.feedback.includes("„to "+en+"“"));assert.ok(item.feedback.endsWith("vor "+de+"."));
+}
 state.page="raetselraum";state.mode="mixed";state.level=1;newRound();
 const puzzleItem=current();puzzleItem.mistakes=1;
 assert.ok(!game().includes('data-action="tip"'));assert.ok(!game().includes('data-action="transcript"'));
@@ -116,4 +129,4 @@ resetDevice();assert.equal(scoreTotal(),0);assert.deepEqual(Object.keys(loadLear
 assert.equal(loadLearning().last,null);
 `,env);
 for(let h=1;h<=12;h++)for(let m=0;m<60;m+=5)assert.ok(fs.statSync(`docs/audio/${h}-${m}.mp3`).size>0);
-console.log("144 clips, 360 rounds, guide, review scheduling, stars, reset, resume, puzzle and audio fallback passed.");
+console.log("144 clips, 360 rounds, 45 guide paths, review scheduling, stars, reset, resume, puzzle and audio fallback passed.");

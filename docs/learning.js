@@ -79,8 +79,8 @@ function makeRound(mode,level,history,first=false) {
   return {idx:0,done:false,items};
 }
 function suggestedRoom({read,whole,quarter,set}) {
-  if (whole!==true) return {page:"hoerhoehle",level:0,why:"Fang in der Hörhöhle mit vollen Stunden an. Hör auf die Zahl vor „o’clock“."};
   if (read===false || set===false) return {page:"werkstatt",level:0,why:"Drehe die Zeiger selbst. Du siehst und hörst, wie sich die Zeit verändert."};
+  if (whole!==true) return {page:"hoerhoehle",level:0,why:"Fang in der Hörhöhle mit vollen Stunden an. Hör auf die Zahl vor „o’clock“."};
   if (quarter!==true) return {page:"hoerhoehle",level:1,why:"In der Hörhöhle kannst du „quarter past“ und „quarter to“ langsam anhören und vergleichen."};
   if (read===true && set===true) return {page:"raetselraum",level:1,why:"Du hast die Uhr gelesen, gehört und gestellt. Probier eine Runde mit halben und Viertelstunden."};
   return {page:"raetselraum",level:0,why:"Starte mit fünf kleinen Rätseln zu vollen Stunden. Du kannst den Raum jederzeit wechseln."};

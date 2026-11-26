@@ -22,7 +22,7 @@ Zwei oder drei Kinder aus der 4. Klasse hören die sechs Sätze. Die Hörprobe i
 3. Nur den Ton vorspielen. Das Kind sieht weder Satz noch Dateinamen und darf eine Digitalzeit frei nennen, auf einer Uhr einstellen oder „weiß nicht“ sagen. Die erste Antwort eintragen. Die Lösung erst nach den Blöcken besprechen.
 4. Erst anschließend A und B den Stimmen zuordnen. Pro Satz und Tempo die gewählten Uhrzeiten nebeneinanderlegen. Besonders auf Verwechslungen zwischen 6:05 und 5:55 achten. Zwei oder drei Kinder liefern Hinweise für eine neue Aufnahme, keine belastbare Rangliste der Stimmen.
 
-Ein Blatt pro Kind und Gerät verwenden. In jede Zelle die tatsächlich gewählte Uhrzeit oder „weiß nicht“ eintragen. Das Blatt bleibt bei der Hörprobe.
+Ein Blatt pro Kind und Gerät verwenden. Bitte keinen Namen auf das Blatt schreiben. In jede Zelle die tatsächlich gewählte Uhrzeit oder „weiß nicht“ eintragen. Das Blatt bleibt bei der Hörprobe.
 
 Gerät: __________  Lautstärke: __________  Erstes Tempo: __________
 

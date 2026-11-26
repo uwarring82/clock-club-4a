@@ -245,8 +245,11 @@ function check(){
   }
   recordMiss(data.history,q);
   if(puzzle())q.feedback="Probier es noch einmal.";
-  else if(q.kind==="hear" && q.target.m>30 && actual.h===normHour(q.target.h+1) && actual.m===q.target.m)
-    q.feedback="Bei „to“ hörst du die nächste volle Stunde. Welche Stunde läuft jetzt noch?";
+  else if(q.kind==="hear" && q.target.m>30 && actual.h===normHour(q.target.h+1) && actual.m===q.target.m){
+    const hourIndex=actual.h%12;
+    const germanHour=["zwölf","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf"][hourIndex];
+    q.feedback="Bei „to "+hourNames[hourIndex]+"“ wird es gleich "+germanHour+". Es ist also noch vor "+germanHour+".";
+  }
   else if(q.kind==="hear")q.feedback="Hör noch einmal hin. Mit der Schnecke spricht die Stimme langsamer.";
   else if(q.kind==="set")q.feedback=actual.m!==q.target.m?"Schau auf den langen Zeiger. Zähle in Fünferschritten.":"Der lange Zeiger passt. Schau noch einmal auf die Stunde.";
   else q.feedback=actual.m===q.target.m?"Schau noch einmal auf den kurzen Zeiger. Er zeigt die Stunde.":"Zähle die Minuten am langen Zeiger in Fünferschritten.";
