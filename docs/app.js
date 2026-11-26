@@ -45,12 +45,12 @@ function hero(title,sub,levelControl=false){
 }
 const welcomeParagraphs = [
   "Welcome to the Clock Club! Come and try the clock workshop. Let’s make half past three. Put your finger on the tip of the short hand and drag it to three. Now drag the long hand to six. Lift your finger and listen. It’s half past three! Can you say it too?",
-  "Ready for a game? Sometimes you’ll hear a time and choose the matching clock. Sometimes you’ll move the hands yourself, then check your answer. If the hands are close together, choose hour or minute and tap the number you want. You can use the plus and minus buttons, too.",
+  "Ready for a game? Sometimes you’ll hear a time and choose the matching time. Sometimes you’ll move the hands yourself, then check your answer. If the hands are close together, choose hour or minute and tap the number you want. You can use the plus and minus buttons, too.",
   "You can play on your own, or take turns with a friend, a parent, or your teacher. One of you says a time. Can the other one make it on the clock?"
 ];
 function entrance(){
   return '<section class="welcome"><div class="welcome-copy"><div class="eyebrow">'+icon("cap")+' ENGLISCH · KLASSE 4A</div><h1 lang="en">Welcome to <br>Clock Club<span>!</span></h1><p>Wie spät ist es auf Englisch? Öffne die Tür und probiere es aus.</p><div class="entry-actions">'+
-    roomLink(data.last?.page||"raetselraum",icon("game")+"Direkt spielen","primary")+roomLink("ankommen","Hilf mir beim Einstieg")+btn("welcome",icon("sound")+" Begrüßung anhören")+
+    roomLink(data.last?.page||"raetselraum",icon("game")+"Direkt spielen","primary")+roomLink("ankommen","Hilf mir beim Einstieg")+roomLink("werkstatt","Zur Uhrenwerkstatt")+btn("welcome",icon("sound")+" Begrüßung anhören")+
     '</div><details><summary>Begrüßung mitlesen</summary><div lang="en">'+welcomeParagraphs.map(line=>'<p>'+line+'</p>').join("")+'</div></details></div><div class="house-art"><img src="assets/clubhouse.svg" alt="Das Clubhaus mit einer Uhr über der offenen Tür"></div></section>';
 }
 const roomIcons={werkstatt:"clock",hoerhoehle:"headphones",sprechbuehne:"sound",raetselraum:"game"};
@@ -134,7 +134,7 @@ function arrival(){
   }
   const q=guide.tasks[guide.step], isSet=q.kind==="set", isHear=q.kind==="hear";
   const title={read:"Welche Zeit zeigt die Uhr?",hear:"Welche Zeit hörst du?",set:"Stell acht Uhr ein."};
-  const instruction={read:"Wähle die passende Zahl.",hear:"Hör den englischen Satz und wähle die Uhrzeit.",set:"Stelle zuerst die Stunde und dann die Minuten ein."};
+  const instruction={read:"Wähle die passende Zahl.",hear:"Hör den englischen Satz und wähle die Uhrzeit.",set:"Zieh den kurzen Zeiger zur 8 und den langen zur 12."};
   return hero("Komm herein!","Lies, hör und stell die Uhr. Du kannst jede Aufgabe überspringen.")+'<div class="play-grid">'+
     panel(isSet?q.draw:q.target,{hidden:isHear,editable:isSet})+'<section class="exercise-card"><div class="progress-head"><span class="eyebrow">ANKOMMEN · AUFGABE '+(guide.step+1)+'</span></div><h2>'+
     title[q.kind]+'</h2><p>'+instruction[q.kind]+'</p>'+
