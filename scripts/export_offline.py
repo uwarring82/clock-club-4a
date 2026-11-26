@@ -27,11 +27,12 @@ def build():
 
     clips = {}
     for hour in range(1, 13):
-        for minute in range(0, 60, 5):
+        for minute in range(60):
             name = f"{hour}-{minute}"
             clips[name] = data_uri(SITE / "audio" / f"{name}.mp3", "audio/mpeg")
 
-    clips['welcome'] = data_uri(SITE / 'audio/welcome.mp3', 'audio/mpeg')
+    for name in ("welcome", "noon", "midnight"):
+        clips[name] = data_uri(SITE / "audio" / f"{name}.mp3", "audio/mpeg")
 
     names = ("clock", "learning", "audio", "app")
     scripts = "const embeddedAudio=" + json.dumps(clips, separators=(",", ":")) + ";\n"
