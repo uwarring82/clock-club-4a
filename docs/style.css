@@ -47,7 +47,10 @@ body:has(#content[data-page="werkstatt"]) :is(.site-header,.footer){display:none
 .sky-lights{position:absolute;inset:0;z-index:-1;pointer-events:none;clip-path:inset(0 0 22% 0)}
 .sky-lights i{position:absolute;width:clamp(2rem,7vmin,4.5rem);aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%)}
 .work-sun{left:var(--sun-x);top:var(--sun-y);background:#fff1ab;box-shadow:0 0 5vmin #ffe2a1b3}
-.work-moon{left:var(--moon-x);top:var(--moon-y);background:#f8f2d6;opacity:calc(1 - var(--light));box-shadow:0 0 3vmin #e5e3ff66}
+.work-moon{position:absolute;left:var(--moon-x);top:var(--moon-y);width:clamp(2rem,7vmin,4.5rem);aspect-ratio:1;transform:translate(-50%,-50%);opacity:var(--moon-visible)}
+.work-sun{opacity:var(--sun-visible)}
+.work-location{position:absolute;right:max(1rem,env(safe-area-inset-right));top:max(.65rem,env(safe-area-inset-top));border-radius:1.15rem;padding:.65rem .9rem;background:#fffdf3ed;color:#383543;border:1px solid #47415033;font-size:.9rem;z-index:1}
+#skyDescription{max-width:23rem;margin:.4rem 0 .8rem;color:#514955;font-size:.87rem}
 .day-clock{display:grid;justify-items:center;gap:clamp(.55rem,2.4vmin,1.5rem);width:100%}
 .work-dial{touch-action:none;user-select:none;-webkit-user-select:none;display:block;width:min(88vw,54svh,32rem);overflow:visible;filter:drop-shadow(var(--shade-x) var(--shade-y) 2.2vmin rgb(35 39 54 / var(--shade-opacity)))}
 .work-caption,.work-exit,.work-tools{background:#fffdf3ed;color:#383543;border:1px solid #47415033}

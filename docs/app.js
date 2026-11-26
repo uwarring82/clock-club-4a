@@ -103,10 +103,10 @@ function game(){
   else body='<div class="play-grid">'+panel(q.kind==="set"?q.draw:q.target,{hidden:q.kind==="hear"&&!q.solved,editable:q.kind==="set"&&!q.solved,tip:!puzzle()&&!q.solved,minutes:!puzzle()&&!q.solved&&q.kind!=="hear"&&(q.mistakes>0||q.assisted)})+exercise(r,q)+'</div>';
   return hero(title,sub,true)+body+(state.page==="spielplatz"?trainingLinks():"")+roomLink("raeume","Alle Lernräume","secondary back");
 }
-function workshopSky(t){
-  // Fixed teaching day: the sun crosses the horizon at 06:00 and 18:00.
-  const hours=t.h%12+(t.pm?12:0)+t.m/60, angle=(hours-6)*Math.PI/12;
-  const altitude=Math.sin(angle), east=Math.cos(angle);
+function workshopSky(t,sky=localSky(t)){
+  const altitude=Math.sin(sky.sun.altitude);
+  const west=Math.sin(sky.sun.azimuth)*Math.cos(sky.sun.altitude);
+  const moonWest=Math.sin(sky.moon.azimuth)*Math.cos(sky.moon.altitude);
   const stops=[
     [-1,[19,27,57],[52,58,93]],[-0.26,[44,55,98],[108,94,137]],
     [0,[116,138,182],[255,182,130]],[0.28,[125,182,218],[255,228,185]],
@@ -116,7 +116,35 @@ function workshopSky(t){
   const [a,b]=[stops[i-1],stops[i]], f=(altitude-a[0])/(b[0]-a[0]);
   const color=k=>"rgb("+a[k].map((v,j)=>Math.round(v+(b[k][j]-v)*f)).join(",")+")";
   const light=Math.max(0,Math.min(1,(altitude+0.09)/0.24));
-  return "--zenith:"+color(1)+";--horizon:"+color(2)+";--sun-x:"+(50-44*east)+"%;--sun-y:"+(77-64*altitude)+"%;--moon-x:"+(50+44*east)+"%;--moon-y:"+(77+64*altitude)+"%;--light:"+light+";--shade-x:"+(east*17)+"vmin;--shade-y:"+(3+6*(1-Math.max(0,altitude)))+"vmin;--shade-opacity:"+(0.07+light*0.15);
+  return "--zenith:"+color(1)+";--horizon:"+color(2)+";--sun-x:"+(50+44*west)+"%;--sun-y:"+(78-64*altitude)+"%;--moon-x:"+(50+44*moonWest)+"%;--moon-y:"+(78-64*Math.sin(sky.moon.altitude))+"%;--sun-visible:"+(sky.gap||sky.sun.altitude<-.015?0:1)+";--moon-visible:"+(sky.gap||sky.moon.altitude<0?0:1-.42*light)+";--shade-x:"+(-west*17)+"vmin;--shade-y:"+(3+6*(1-Math.max(0,altitude)))+"vmin;--shade-opacity:"+(sky.gap?0:light*.23);
+
+}
+function askPlace(){
+  askedForPlace=true;
+  const options=skyPlaces.map((p,i)=>'<option value="'+i+'" '+(p===skyPlace?"selected":"")+'>'+p[0]+'</option>').join("");
+  openDialog('<h2 id="helpTitle">Wo spielst du?</h2><p>Wähle einen Ort für den Himmel hinter deiner Uhr.</p>'+
+    '<label for="skyCity">Spielort</label> <select id="skyCity">'+options+'</select><div class="entry-actions">'+
+    btn("use-city","Ort übernehmen","primary")+btn("use-device","Gerätestandort verwenden")+'</div>'+
+    '<p id="placeStatus" role="status">Beim Gerätestandort nutzt die Uhr die Zeitzone deines Geräts. Der Clock Club rundet den Standort und behält ihn nur für diesen Besuch.</p>'+
+    btn("dismiss","Weiter mit "+skyPlace[0]));
+}
+function choosePlace(place){
+  placeRequest++;skyPlace=place;skyDayShift=0;
+  $("helpDialog").close();render();
+}
+function locateDevice(){
+  const status=$("placeStatus");
+  if(!navigator.geolocation){status.textContent="Standort nicht verfügbar. Wähle einen Ort aus der Liste.";return;}
+  const request=++placeRequest;
+  const current=()=>request===placeRequest && $("helpDialog").open && $("placeStatus")===status && state.page==="werkstatt";
+  status.textContent="Standort wird bestimmt …";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    if(!current())return;
+    const rounded=n=>Math.round(n*10)/10;
+    choosePlace(["Mein Standort",rounded(pos.coords.latitude),rounded(pos.coords.longitude),Intl.DateTimeFormat().resolvedOptions().timeZone]);
+  },()=>{
+    if(current())status.textContent="Standort nicht verfügbar. Du kannst einen Ort aus der Liste wählen.";
+  },{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
 }
 function workshopReadings(t){
   const special=specialTime(t);
@@ -126,16 +154,16 @@ function workshopReadings(t){
     '<div lang="en"><span>English</span><strong>'+en+'</strong></div>';
 }
 function workshop(){
-  const t=data.work;
-  return '<section class="day-room" id="dayRoom" style="'+workshopSky(t)+'" aria-label="Uhrenwerkstatt">'+
-    '<div class="sky-lights" aria-hidden="true"><i class="work-sun"></i><i class="work-moon"></i></div>'+
-    '<a class="work-exit" href="#raeume">‹ Lernräume</a><div class="day-clock">'+
+  const t=data.work, sky=localSky(t);
+  return '<section class="day-room" id="dayRoom" style="'+workshopSky(t,sky)+'" aria-label="Uhrenwerkstatt">'+
+    '<div class="sky-lights" aria-hidden="true"><i class="work-sun"></i><svg class="work-moon" viewBox="-11 -11 22 22"><g id="moonLimb">'+moonShape(sky)+'</g></svg></div>'+
+    '<button class="work-location" data-action="place" aria-label="Spielort ändern">'+skyPlace[0]+'</button><a class="work-exit" href="#raeume">‹ Lernräume</a><div class="day-clock">'+
     '<svg class="work-dial" viewBox="170 59 220 220" role="img" aria-labelledby="dialDesc"><title id="dialDesc">Uhrzeit '+clock24(t)+'</title>'+
     '<circle cx="280" cy="169" r="104" fill="#faf8ed" stroke="#4b4c58" stroke-width="4"/><g class="dial-text">'+labels+'</g><g id="hands">'+hands(t)+'</g>'+
     '<circle id="drawSurface" cx="280" cy="169" r="104" fill="transparent"/></svg>'+
     '<div class="work-caption"><div id="workReadings" class="work-readings">'+workshopReadings(t)+'</div>'+
     '<button class="work-listen" data-action="listen" aria-label="Englische Uhrzeit anhören">'+icon("sound")+'<span lang="en" id="workPhrase">'+words(t)+'</span></button></div></div>'+
-    '<details class="work-tools"><summary>Uhr einstellen</summary><div>'+handControls(workshopHand)+
+    '<details class="work-tools"><summary>Uhr einstellen</summary><div><p id="skyDescription">'+skyDescription(sky)+'</p>'+handControls(workshopHand)+
     btn("midnight","00:00 · Midnight")+btn("noon","12:00 · Noon / High noon")+'</div></details></section>';
 }
 function stage(){
@@ -229,6 +257,7 @@ function route(){
   if(state.page==="sprechbuehne"&&!minutesByLevel[state.level].includes(data.stage.m))nextStageTime();
   if(state.page==="ankommen")guide=startGuide();
   render();save();main.focus({preventScroll:true});window.scrollTo(0,0);
+  if(state.page==="werkstatt" && !askedForPlace)askPlace();
 }
 function nextStageTime(){
   const candidates=[];
@@ -238,7 +267,9 @@ function nextStageTime(){
   data.stage=shuffle(candidates)[0];data.phase=0;
 }
 function advanceWorkshop(t,delta){
-  const total=((t.h%12+(t.pm?12:0))*60+t.m+delta+1440)%1440;
+  const minutes=(t.h%12+(t.pm?12:0))*60+t.m+delta;
+  if(t===data.work)skyDayShift+=Math.floor(minutes/1440);
+  const total=(minutes+1440)%1440;
   t.h=normHour(Math.floor(total/60));t.m=total%60;t.pm=total>=720;
 }
 function shiftHand(q,step){
@@ -250,7 +281,10 @@ function shiftHand(q,step){
 function updateHands(q){
   $("hands").innerHTML=hands(q.draw);
   if(state.page==="werkstatt"){
-    $("dayRoom").setAttribute("style",workshopSky(q.draw));
+    const sky=localSky(q.draw);
+    $("dayRoom").setAttribute("style",workshopSky(q.draw,sky));
+    $("moonLimb").innerHTML=moonShape(sky);
+    $("skyDescription").textContent=skyDescription(sky);
     $("workReadings").innerHTML=workshopReadings(q.draw);
     $("workPhrase").textContent=words(q.draw);
   }
@@ -382,6 +416,7 @@ function resetDevice(){
   state.scores=empty;
   Object.assign(data,{last:null,rounds:{},history:{},work:{h:3,m:0},stage:{h:3,m:0},phase:0});
   state.page="eingang";state.mode="read";state.level=0;workshopHand="hour";guide=null;
+  skyPlace=skyPlaces[0];skyDayShift=0;askedForPlace=false;placeRequest++;
   saveStars();save();$("helpDialog").close();location.hash="eingang";
 }
 function listen(slow){
@@ -409,6 +444,9 @@ main.addEventListener("change",e=>{
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   const d=b.dataset,action=d.action;
+  if(action==="place"){askPlace();return;}
+  if(action==="use-city"){choosePlace(skyPlaces[Number($("skyCity").value)]);return;}
+  if(action==="use-device"){locateDevice();return;}
   if(action==="welcome"){if(welcomePlaying)stopAudio();else playWelcome();return;}
   if(b.id==="closeHelp"||action==="dismiss"){$("helpDialog").close();render();return;}
   if(d.word!==undefined||d.slowWord!==undefined){play(vocabulary[Number(d.word??d.slowWord)][2],d.slowWord!==undefined);return;}

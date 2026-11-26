@@ -34,7 +34,7 @@ def build():
     for name in ("welcome", "noon", "midnight"):
         clips[name] = data_uri(SITE / "audio" / f"{name}.mp3", "audio/mpeg")
 
-    names = ("clock", "learning", "audio", "app")
+    names = ("suncalc", "sky", "clock", "learning", "audio", "app")
     scripts = "const embeddedAudio=" + json.dumps(clips, separators=(",", ":")) + ";\n"
     scripts += "\n".join((SITE / f"{name}.js").read_text() for name in names)
     scripts = scripts.replace("assets/clubhouse.svg", data_uri(SITE / "assets/clubhouse.svg", "image/svg+xml"))
