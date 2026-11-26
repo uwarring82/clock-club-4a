@@ -8,7 +8,7 @@ Jede gelöste Aufgabe gibt einen Stern. Im Üben vorgemerkte Uhrzeiten kommen in
 
 ## Hörbeispiele
 
-Alle 144 englischen Sätze sind als MP3 enthalten. Die vorhandene Stimme ist synthetisch. Das Spiel nutzt zuerst die Datei und bei einem Wiedergabefehler die englische Sprachausgabe des Geräts. „Langsam“ verwendet dieselbe Aufnahme mit 0,8-facher Geschwindigkeit. Die nächsten Schritte für eine erwachsene britische Stimme stehen im [Aufnahmeblatt](AUFNAHMEPROBE.md).
+Alle 144 englischen Sätze sind als MP3 enthalten. Die synthetische Stimme Marian (Speechify, britisches Englisch) spricht alle Uhrzeiten. Das Spiel nutzt zuerst die Datei und bei einem Wiedergabefehler die englische Sprachausgabe des Geräts. „Langsam“ verwendet dieselbe Aufnahme mit 0,8-facher Geschwindigkeit. Ein Hörtest für den Vergleich mit menschlichen Aufnahmen steht im [Aufnahmeblatt](AUFNAHMEPROBE.md).
 
 ## Bearbeiten und veröffentlichen
 

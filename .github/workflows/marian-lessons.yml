@@ -1,0 +1,34 @@
+name: Generate Marian lesson audio
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: marian-lesson-audio
+jobs:
+  generate:
+    if: github.ref_type == 'branch' && github.ref_name != 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Install FFmpeg if needed
+        run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y ffmpeg)
+      - name: Synthesize the game phrases
+        env:
+          SPEECHIFY_API_KEY: ${{ secrets.SPEECHIFY_API_KEY }}
+        run: python3 scripts/generate_marian.py "$RUNNER_TEMP/marian"
+      - name: Normalize, verify and embed all 144 clips
+        run: |
+          python3 scripts/prepare_audio.py "$RUNNER_TEMP/marian" docs/audio
+          python3 scripts/export_offline.py
+          node scripts/verify.cjs
+          test "$(find "$RUNNER_TEMP/marian" -name '*.wav' | wc -l)" -eq 144
+      - name: Save verified edition on the working branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/audio docs/Clock-Club-4a.html
+          git commit -m "Replace all 144 time recordings with Marian and rebuild offline game"
+          git push
