@@ -13,10 +13,11 @@ class AudioMock {
   pause(){}
   play(){playback.push({src:this.src,rate:this.playbackRate,pitch:this.preservesPitch});return Promise.resolve();}
 }
+const phraseElement = {textContent:""};
 const env = {
   Audio:AudioMock,SpeechSynthesisUtterance:class {},location:{hash:""},
   localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},
-  document:{activeElement:null,querySelector:()=>element,getElementById:()=>element,querySelectorAll:()=>[],addEventListener(){}},
+  document:{activeElement:null,querySelector:()=>element,getElementById:id=>id==="workPhrase"?phraseElement:element,querySelectorAll:()=>[],addEventListener(){}},
   window:{scrollTo(){},addEventListener(){},SpeechSynthesisUtterance:class {},
     speechSynthesis:{cancel(){},getVoices:()=>[{lang:"en-GB",localService:true}],speak:u=>speech.push(u)}},
   assert,playback,speech
