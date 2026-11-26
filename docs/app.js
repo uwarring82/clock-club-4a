@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);
 const levels=["Volle Stunden","Halb & Viertel","Fünf-Minuten-Schritte"];
 const modes={
   read:{name:"Uhr ablesen",q:"Wie spät ist es?",instruction:"Schau auf die Uhr und wähle den richtigen Satz."},
-  set:{name:"Zeiger zeichnen",q:"Stell die Uhr!",instruction:"Wähle einen Zeiger. Tippe auf seine Zielzahl oder stelle ihn mit + und −."},
+  set:{name:"Zeiger zeichnen",q:"Stell die Uhr!",instruction:"Zieh die Zeigerspitzen mit dem Finger zur passenden Zahl. Du kannst auch Stunde oder Minute wählen und auf eine Zahl tippen."},
   hear:{name:"Uhrzeit hören",q:"Welche Zeit hörst du?",instruction:"Hör dir den Satz an und wähle die passende Uhrzeit."}
 };
 const key="clock-club-stars-v1";
@@ -44,9 +44,9 @@ function hero(title,sub,levelControl=false){
     (levelControl?'<div class="level-picker">'+icon("levels")+'<select id="level" aria-label="Übungsstufe">'+levels.map((l,i)=>'<option value="'+i+'" '+(i===state.level?'selected':'')+'>Stufe '+(i+1)+' · '+l+'</option>').join("")+'</select>'+icon("down")+'</div>':'')+'</section>';
 }
 const welcomeParagraphs = [
-  "Welcome to the Clock Club! Here you can learn to tell the time in English. Look at the clock. Where does the long hand point when it’s half past three? In the clock workshop, you can move the hands and hear the time you’ve made.",
-  "To get started, choose the first button to play straight away, or the second for a few questions that help you pick a room. You can listen to a time slowly, say it out loud, or try five clock puzzles. Every puzzle you solve earns a star.",
-  "Teachers, try playing a time for the class. Ask everyone to show it on a clock, then listen again together. Parents, take turns with your child: one of you sets the hands, and the other says the time. Your stars stay in this browser, so you can come back and practise again."
+  "Welcome to the Clock Club! Come and try the clock workshop. Let’s make half past three. Put your finger on the tip of the short hand and drag it to three. Now drag the long hand to six. Lift your finger and listen. It’s half past three! Can you say it too?",
+  "Ready for a game? Sometimes you’ll hear a time and choose the matching clock. Sometimes you’ll move the hands yourself, then check your answer. If the hands are close together, choose hour or minute and tap the number you want. You can use the plus and minus buttons, too.",
+  "You can play on your own, or take turns with a friend, a parent, or your teacher. One of you says a time. Can the other one make it on the clock?"
 ];
 function entrance(){
   return '<section class="welcome"><div class="welcome-copy"><div class="eyebrow">'+icon("cap")+' ENGLISCH · KLASSE 4A</div><h1 lang="en">Welcome to <br>Clock Club<span>!</span></h1><p>Wie spät ist es auf Englisch? Öffne die Tür und probiere es aus.</p><div class="entry-actions">'+
@@ -105,7 +105,7 @@ function game(){
 }
 function workshop(){
   return hero("Uhrenwerkstatt","Drehe die Zeiger. Die Uhr spricht deine Zeit auf Englisch.")+'<div class="play-grid">'+panel(data.work,{editable:true,title:"Deine Uhr"})+
-    '<section class="exercise-card workshop-card"><h2>Deine Wunschzeit</h2><p>Wähle den kurzen oder langen Zeiger. Ziehe ihn zur Zahl oder benutze die Tasten.</p>'+
+    '<section class="exercise-card workshop-card"><h2>Deine Wunschzeit</h2><p>Zieh den kurzen und den langen Zeiger mit dem Finger. Lass los und hör dir deine Uhrzeit an.</p>'+
     '<div class="target"><strong>'+digital(data.work)+' Uhr</strong><span lang="en">'+words(data.work)+'</span></div>'+handControls(workshopHand)+audioButtons("Noch einmal hören")+
     roomLink("spielplatz","Ablesen und Zeichnen üben","primary")+'</section></div>'+roomLink("raeume","Alle Lernräume","secondary back");
 }
@@ -221,20 +221,54 @@ function finishDraw(q){
 }
 function bindDrawing(){
   const surface=$("drawSurface"),q=drawing();
-  let pointer=null,changed=false;
+  let pointer=null, changed=false, grab=null, moved=false, selected=false;
+  function position(e){
+    const svg=surface.ownerSVGElement, p=svg.createSVGPoint();
+    p.x=e.clientX;p.y=e.clientY;
+    const pos=p.matrixTransform(svg.getScreenCTM().inverse());
+    return {x:pos.x-280,y:pos.y-169};
+  }
+  function hitHand({x,y}){
+    const radius=Math.hypot(x,y);
+    if(radius<18 || radius>88)return null;
+    // Compare the touch with both finite hand shafts in clock coordinates.
+    function distance(degrees,length){
+      const a=degrees*Math.PI/180, dx=Math.sin(a), dy=-Math.cos(a);
+      const along=Math.max(0,Math.min(length,x*dx+y*dy));
+      return Math.hypot(x-along*dx,y-along*dy);
+    }
+    const hour=distance(q.draw.h*30+q.draw.m/2,59), minute=distance(q.draw.m*6,81);
+    if(Math.min(hour,minute)>8)return null;
+    if(Math.abs(hour-minute)<2)return Math.abs(radius-59)<8 ? "hour" : q.hand;
+    return hour<minute?"hour":"minute";
+  }
   function change(e){
-    const svg=surface.ownerSVGElement,p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
-    const pos=p.matrixTransform(svg.getScreenCTM().inverse()),x=pos.x-280,y=pos.y-169;
+    const {x,y}=position(e);
     if(Math.hypot(x,y)<18)return;
+    if(grab && !moved && Math.hypot(x-grab.x,y-grab.y)<3)return;
+    moved=true;
     const angle=(Math.atan2(x,-y)*180/Math.PI+360)%360;
     const before=digital(q.draw);
-    if(q.hand==="hour")q.draw.h=normHour(Math.floor(angle/30+.07));
+    if(q.hand==="hour")q.draw.h=normHour(Math.round(angle/30));
     else q.draw.m=Math.round(angle/30)%12*5;
     if(digital(q.draw)!==before){changed=true;updateHands(q);}
   }
-  surface.onpointerdown=e=>{if(pointer!==null)return;e.preventDefault();pointer=e.pointerId;surface.setPointerCapture(pointer);change(e);};
+  surface.onpointerdown=e=>{
+    if(pointer!==null)return;
+    e.preventDefault();pointer=e.pointerId;surface.setPointerCapture(pointer);
+    const pos=position(e),hand=hitHand(pos);
+    if(hand){
+      grab=pos;selected=q.hand!==hand;q.hand=hand;
+      if(state.page==="werkstatt")workshopHand=hand;
+    }else change(e);
+  };
   surface.onpointermove=e=>{if(e.pointerId===pointer)change(e);};
-  function finish(e){if(pointer!==e.pointerId)return;pointer=null;if(changed)finishDraw(q);changed=false;}
+  function finish(e){
+    if(pointer!==e.pointerId)return;
+    pointer=null;
+    if(changed)finishDraw(q);else if(selected){render();save();}
+    changed=false;selected=false;moved=false;grab=null;
+  }
   surface.onpointerup=e=>{if(e.pointerId===pointer){change(e);finish(e);}};
   surface.onpointercancel=surface.onlostpointercapture=finish;
 }
