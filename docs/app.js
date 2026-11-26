@@ -115,22 +115,26 @@ function stage(){
     btn("stage-next",["Jetzt nachsprechen","Mit dem Vorbild vergleichen","Neuer Satz"][phase],"primary")+'</section></div>'+roomLink("raeume","Alle Lernräume","secondary back");
 }
 function startGuide(){
-  const tasks=[makeQuestion({h:4,m:30},"read"),makeQuestion({h:2,m:45},"hear"),makeQuestion({h:8,m:0},"set")];
-  tasks[2].draw={h:12,m:30};
-  return {step:0,results:[],tasks};
+  const read=makeQuestion({h:4,m:30},"read");
+  const whole=makeQuestion({h:6,m:0},"hear");
+  const set=makeQuestion({h:8,m:0},"set");
+  set.draw={h:12,m:30};
+  return {step:0,results:{},tasks:[{probe:"read",...read},{probe:"whole",...whole},{probe:"set",...set}]};
 }
 function arrival(){
   guide ||= startGuide();
-  if(guide.step===3){
+  if(guide.step===guide.tasks.length){
     const rec=suggestedRoom(guide.results);
     return hero("Deine Empfehlung","Du entscheidest, wo du anfängst.")+'<section class="recommend room-tile '+rec.page+'"><span class="door-icon">'+icon(roomIcons[rec.page])+'</span><div><div class="eyebrow">STUFE '+(rec.level+1)+'</div><h2>'+roomNames[rec.page]+'</h2><p>'+rec.why+'</p><div class="entry-actions">'+btn("recommended","Raum betreten","primary")+roomLink("raeume","Alle Lernräume")+'</div></div></section>';
   }
-  const i=guide.step,q=guide.tasks[i];
-  return hero("Komm herein!","Drei kleine Aufgaben helfen dir, einen Raum zu finden. Du kannst jede überspringen.")+'<div class="play-grid">'+
-    panel(i===2?q.draw:q.target,{hidden:i===1,editable:i===2})+'<section class="exercise-card"><div class="progress-head"><span class="eyebrow">ANKOMMEN · '+(i+1)+' VON 3</span></div><h2>'+
-    ["Welche Zeit zeigt die Uhr?","Welche Zeit hörst du?","Stell acht Uhr ein."][i]+'</h2><p>'+["Wähle die passende Zahl.","Hör den englischen Satz und wähle die Uhrzeit.","Stelle zuerst die Stunde und dann die Minuten ein."][i]+'</p>'+
-    (i===1?audioButtons("Zeit anhören",false):"")+(i===2?handControls(q.hand):answers(q,true))+
-    (q.feedback?'<p class="feedback" role="status">'+q.feedback+'</p>':'')+btn("guide-next",i===2?"Empfehlung ansehen":"Weiter","primary")+btn("guide-skip","Überspringen","transcript")+'</section></div>';
+  const q=guide.tasks[guide.step], isSet=q.kind==="set", isHear=q.kind==="hear";
+  const title={read:"Welche Zeit zeigt die Uhr?",hear:"Welche Zeit hörst du?",set:"Stell acht Uhr ein."};
+  const instruction={read:"Wähle die passende Zahl.",hear:"Hör den englischen Satz und wähle die Uhrzeit.",set:"Stelle zuerst die Stunde und dann die Minuten ein."};
+  return hero("Komm herein!","Lies, hör und stell die Uhr. Du kannst jede Aufgabe überspringen.")+'<div class="play-grid">'+
+    panel(isSet?q.draw:q.target,{hidden:isHear,editable:isSet})+'<section class="exercise-card"><div class="progress-head"><span class="eyebrow">ANKOMMEN · AUFGABE '+(guide.step+1)+'</span></div><h2>'+
+    title[q.kind]+'</h2><p>'+instruction[q.kind]+'</p>'+
+    (isHear?audioButtons("Zeit anhören",false):"")+(isSet?handControls(q.hand):answers(q,true))+
+    (q.feedback?'<p class="feedback" role="status">'+q.feedback+'</p>':'')+btn("guide-next",isSet?"Empfehlung ansehen":"Weiter","primary")+btn("guide-skip","Überspringen","transcript")+'</section></div>';
 }
 const vocabulary=[
  ["o’clock","zur vollen Stunde",{h:3,m:0},"Drei Uhr."],
@@ -159,7 +163,7 @@ function trophy(){
     '<section class="history-card"><h2>So hast du die Aufgaben gelöst</h2><p>Alle Versuche zählen zum Üben. Ältere Sterne bleiben in deiner Sammlung.</p><div class="table-wrap"><table><thead><tr><th>Spielart</th><th>Auf Anhieb</th><th>Mit Hilfe beim ersten Versuch</th><th>Nach erneutem Versuch</th></tr></thead><tbody>'+rows+'</tbody></table></div><h3>Das üben wir wieder</h3>'+
     (reviews.length?'<ul class="review-list">'+reviews.map(([id])=>{const [mode,stamp]=id.split("/");return '<li>'+stamp+' Uhr · '+modes[mode].name+'</li>';}).join("")+'</ul>':'<p>Aktuell ist keine Uhrzeit zur Wiederholung vorgemerkt.</p>')+'<details><summary>Sterne nach Stufe ansehen</summary><div class="table-wrap"><table><thead><tr><th>Spielart</th><th>Stufe 1</th><th>Stufe 2</th><th>Stufe 3</th></tr></thead><tbody>'+byLevel+'</tbody></table></div></details></section><div class="entry-actions">'+roomLink("raeume","Zu den Lernräumen")+btn("reset","Auf diesem Gerät neu anfangen","text-button")+'</div>';
 }
-function guideQuestion(){return state.page==="ankommen" && guide?.step<3 ? guide.tasks[guide.step] : null;}
+function guideQuestion(){return state.page==="ankommen" && guide ? guide.tasks[guide.step] || null : null;}
 function activeQuestion(){return practice() && !round().done ? current() : guideQuestion();}
 function drawing(){
   if(state.page==="werkstatt")return {draw:data.work,hand:workshopHand};
@@ -241,6 +245,11 @@ function check(){
   }
   recordMiss(data.history,q);
   if(puzzle())q.feedback="Probier es noch einmal.";
+  else if(q.kind==="hear" && q.target.m>30 && actual.h===normHour(q.target.h+1) && actual.m===q.target.m){
+    const hourIndex=actual.h%12;
+    const germanHour=["zwölf","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf"][hourIndex];
+    q.feedback="Bei „to "+hourNames[hourIndex]+"“ wird es gleich "+germanHour+". Es ist also noch vor "+germanHour+".";
+  }
   else if(q.kind==="hear")q.feedback="Hör noch einmal hin. Mit der Schnecke spricht die Stimme langsamer.";
   else if(q.kind==="set")q.feedback=actual.m!==q.target.m?"Schau auf den langen Zeiger. Zähle in Fünferschritten.":"Der lange Zeiger passt. Schau noch einmal auf die Stunde.";
   else q.feedback=actual.m===q.target.m?"Schau noch einmal auf den kurzen Zeiger. Er zeigt die Stunde.":"Zähle die Minuten am langen Zeiger in Fünferschritten.";
@@ -259,8 +268,13 @@ function advanceGuide(skip){
   const q=guideQuestion();if(!q)return;
   if(!skip&&q.kind!=="set"&&q.selected===null){q.feedback="Wähle eine Antwort oder überspringe die Aufgabe.";render();return;}
   const answer=q.kind==="set"?q.draw:q.options[q.selected];
-  guide.results.push(skip?null:sameTime(answer,q.target));guide.step++;
-  clearAudio();render();main.focus({preventScroll:true});say(guide.step===3?"Deine Empfehlung":"Nächste Aufgabe");
+  const correct=skip?null:sameTime(answer,q.target);
+  guide.results[q.probe]=correct;
+  guide.step++;
+  if(q.probe==="whole" && correct){
+    guide.tasks.splice(guide.step,0,{probe:"quarter",...makeQuestion({h:2,m:45},"hear")});
+  }
+  clearAudio();render();main.focus({preventScroll:true});say(guide.step===guide.tasks.length?"Deine Empfehlung":"Nächste Aufgabe");
 }
 function resetDevice(){
   const empty={read:[0,0,0],set:[0,0,0],hear:[0,0,0]};

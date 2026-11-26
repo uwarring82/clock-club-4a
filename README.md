@@ -2,7 +2,7 @@
 
 [Öffentliche Lernseite](https://uwarring82.github.io/clock-club-4a/) · [Offline-Fassung](https://uwarring82.github.io/clock-club-4a/Clock-Club-4a.html)
 
-Ein englisches Uhrenspiel für die 4. Klasse. Kinder starten direkt oder probieren am Eingang drei kurze Aufgaben aus. Die Empfehlung für Raum und Stufe ist freiwillig. In der Uhrenwerkstatt spricht die verstellbare Uhr mit, in der Hörhöhle lassen sich englische Sätze langsam hören und mitlesen. Die Sprechbühne funktioniert ohne Mikrofon. Der Rätselraum kombiniert Lesen, Hören und Zeigerstellen in fünf Aufgaben.
+Ein englisches Uhrenspiel für die 4. Klasse. Kinder starten direkt oder lesen, hören und stellen am Eingang die Uhr. Wer eine volle Stunde auf Englisch erkennt, hört zusätzlich einen Satz mit „quarter to“. Die Empfehlung für Raum und Stufe ist freiwillig. In der Uhrenwerkstatt spricht die verstellbare Uhr mit, in der Hörhöhle lassen sich englische Sätze langsam hören und mitlesen. Die Sprechbühne funktioniert ohne Mikrofon. Der Rätselraum kombiniert Lesen, Hören und Zeigerstellen in fünf Aufgaben.
 
 Jede gelöste Aufgabe gibt einen Stern. Im Üben vorgemerkte Uhrzeiten kommen in passenden späteren Runden wieder. Die Sternesammlung zeigt auf dem jeweiligen Gerät, wie die Aufgaben gelöst wurden. „Neu anfangen“ löscht nach Bestätigung Sterne und Lernstand dieses Browsers. Es gibt keine Anmeldung und keine zentrale Klassenliste.
 

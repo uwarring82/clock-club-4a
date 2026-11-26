@@ -15,7 +15,27 @@ In einem ruhigen Raum mit gleichbleibendem Mikrofonabstand aufnehmen. Jeden Satz
 
 ## Hörprobe auf den Geräten
 
-Die Beispiele auf einem iPhone und einem tatsächlich verwendeten Schulgerät bei normaler Gerätelautstärke anhören. Beim Vergleich zwischen „five past six“ und „five to six“ bleibt der Text verdeckt. Prüfen, ob die beiden Uhrzeiten auch im langsamen Modus unterscheidbar sind. Festhalten, welches Gerät, welche Lautstärke und welcher Satz Schwierigkeiten gemacht haben.
+Zwei oder drei Kinder aus der 4. Klasse hören die sechs Sätze. Die Hörprobe ist freiwillig. Ein Kind hört auf einem Gerät bei fester, angenehmer Lautstärke. Über die Proben hinweg sollen ein iPhone und ein im Unterricht verwendetes Schulgerät vorkommen.
+
+1. Die menschlichen Proben mit dem Skript unten auf denselben Zielpegel wie die vorhandenen MP3s bringen. Für jede der sechs Uhrzeiten beide Quellen bereitlegen. Den Clips neutrale Kennungen geben und den Schlüssel bei der erwachsenen Person lassen.
+2. Je Kind zwei kurze Blöcke mit je zwölf Durchgängen vorsehen. In jedem Block kommt jeder Satz einmal mit jeder Stimme vor. Ein Block läuft bei normalem Tempo (1,0×), der andere bei 0,8× mit erhaltener Tonhöhe. Beim nächsten Kind die Reihenfolge der Blöcke wechseln. Innerhalb der Blöcke die Clips mischen und gleiche Uhrzeiten zeitlich trennen.
+3. Nur den Ton vorspielen. Das Kind sieht weder Satz noch Dateinamen und darf eine Digitalzeit frei nennen, auf einer Uhr einstellen oder „weiß nicht“ sagen. Die erste Antwort eintragen. Die Lösung erst nach den Blöcken besprechen.
+4. Erst anschließend A und B den Stimmen zuordnen. Pro Satz und Tempo die gewählten Uhrzeiten nebeneinanderlegen. Besonders auf Verwechslungen zwischen 6:05 und 5:55 achten. Zwei oder drei Kinder liefern Hinweise für eine neue Aufnahme, keine belastbare Rangliste der Stimmen.
+
+Ein Blatt pro Kind und Gerät verwenden. Bitte keinen Namen auf das Blatt schreiben. In jede Zelle die tatsächlich gewählte Uhrzeit oder „weiß nicht“ eintragen. Das Blatt bleibt bei der Hörprobe.
+
+Gerät: __________  Lautstärke: __________  Erstes Tempo: __________
+
+| Zielzeit | A · 1,0× | B · 1,0× | A · 0,8× | B · 0,8× |
+| --- | --- | --- | --- | --- |
+| 6:00 | | | | |
+| 6:05 | | | | |
+| 5:55 | | | | |
+| 3:30 | | | | |
+| 7:15 | | | | |
+| 6:45 | | | | |
+
+Die bisherigen Vergleichsclips liegen unter `docs/audio/` als Mono-MP3 mit 16 kHz und 48 kbit/s.
 
 ## Übernahme nach Freigabe
 
