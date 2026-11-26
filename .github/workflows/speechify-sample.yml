@@ -1,0 +1,60 @@
+name: Speechify voice sample
+on:
+  workflow_dispatch:
+    inputs:
+      voice_id:
+        description: Speechify catalog voice ID for this sample
+        required: true
+        type: string
+permissions: {}
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Generate Clock Club listening sample
+        shell: python
+        env:
+          SPEECHIFY_API_KEY: ${{ secrets.SPEECHIFY_API_KEY }}
+          VOICE_ID: ${{ inputs.voice_id }}
+        run: |
+          import base64
+          import json
+          import os
+          from pathlib import Path
+          from urllib.error import HTTPError
+          from urllib.request import Request, urlopen
+
+          key = os.environ["SPEECHIFY_API_KEY"]
+          if not key:
+              raise SystemExit("Set the SPEECHIFY_API_KEY repository secret.")
+          script = """Welcome to the Clock Club! Are you ready? Let's look at the clock together.
+
+          The long hand is on the three. The short hand is just past eight. What time is it?
+          That's right. It's a quarter past eight.
+
+          Now listen carefully. A quarter past eight. A quarter to eight. Can you hear the difference?
+
+          Let's try another one. The long hand is on the nine. The short hand is nearly at six. Is it a quarter past six?
+          Almost! Look at the short hand again. It hasn't reached six yet. It's a quarter to six.
+
+          Here's one last question. It's half past four. Where would you put the long hand?"""
+          payload = dict(input=script, voice_id=os.environ["VOICE_ID"].strip(),
+                         language="en-GB", model="simba-3.5", audio_format="mp3")
+          request = Request("https://api.speechify.ai/v1/audio/speech",
+                            data=json.dumps(payload).encode(),
+                            headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
+          try:
+              with urlopen(request, timeout=90) as response:
+                  result = json.load(response)
+          except HTTPError as exc:
+              raise SystemExit(f"Speechify returned HTTP {exc.code}. Check the key, voice ID and quota.")
+          audio = base64.b64decode(result["audio_data"], validate=True)
+          if not audio or result.get("audio_format") != "mp3":
+              raise SystemExit("Speechify returned no MP3.")
+          Path("clock-club-sample.mp3").write_bytes(audio)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clock-club-voice-sample
+          path: clock-club-sample.mp3
+          if-no-files-found: error
