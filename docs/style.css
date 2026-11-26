@@ -49,7 +49,7 @@ body:has(#content[data-page="werkstatt"]) :is(.site-header,.footer){display:none
 .work-sun{left:var(--sun-x);top:var(--sun-y);background:#fff1ab;box-shadow:0 0 5vmin #ffe2a1b3}
 .work-moon{left:var(--moon-x);top:var(--moon-y);background:#f8f2d6;opacity:calc(1 - var(--light));box-shadow:0 0 3vmin #e5e3ff66}
 .day-clock{display:grid;justify-items:center;gap:clamp(.55rem,2.4vmin,1.5rem);width:100%}
-.work-dial{display:block;width:min(88vw,54svh,32rem);overflow:visible;filter:drop-shadow(var(--shade-x) var(--shade-y) 2.2vmin rgb(35 39 54 / var(--shade-opacity)))}
+.work-dial{touch-action:none;user-select:none;-webkit-user-select:none;display:block;width:min(88vw,54svh,32rem);overflow:visible;filter:drop-shadow(var(--shade-x) var(--shade-y) 2.2vmin rgb(35 39 54 / var(--shade-opacity)))}
 .work-caption,.work-exit,.work-tools{background:#fffdf3ed;color:#383543;border:1px solid #47415033}
 .work-caption{width:min(94vw,29rem);border-radius:1.35rem;padding:.8rem 1rem .25rem;text-align:center;position:relative}
 .work-readings{display:grid;grid-template-columns:1fr 1fr;font-variant-numeric:tabular-nums}
