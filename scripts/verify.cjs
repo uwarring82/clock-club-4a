@@ -22,7 +22,7 @@ const env = {
     speechSynthesis:{cancel(){},getVoices:()=>[{lang:"en-GB",localService:true}],speak:u=>speech.push(u)}},
   assert,playback,speech
 };
-const scripts=["clock","learning","audio","app"].map(name=>fs.readFileSync("docs/"+name+".js","utf8"));
+const scripts=["suncalc","sky","clock","learning","audio","app"].map(name=>fs.readFileSync("docs/"+name+".js","utf8"));
 vm.runInNewContext(scripts.join("\n"),env);
 vm.runInNewContext(`
 assert.equal(scoreTotal(),2);
@@ -168,6 +168,16 @@ assert.equal(words({h:12,m:59}),"It’s one minute to one.");
 assert.equal(words({h:2,m:23}),"It’s twenty-three minutes past two.");
 assert.equal(words({h:12,m:0}),"It’s twelve o’clock.");
 for(let h=1;h<=12;h++)for(let m=0;m<60;m++)assert.ok(!words({h,m}).includes("undefined"));
+// London and Berlin have different civil times. The 2024 eclipse was near new moon.
+const eclipse=Date.parse("2024-04-08T18:00:00Z");
+const ny=skyPlaces.find(p=>p[0]==="New York");
+const local=localSky({h:2,m:0,pm:true},ny,eclipse,0);
+assert.equal(local.date.toISOString(),"2024-04-08T18:00:00.000Z");
+assert.ok(local.percent<1 && local.sun.altitude>0);
+const full=localSky({h:2,m:0,pm:true},ny,Date.parse("2024-04-23T18:00:00Z"),0);
+assert.ok(full.percent>99);
+assert.ok(observingTime({h:2,m:30,pm:false},skyPlaces[0],Date.parse("2026-03-29T12:00Z"),0).gap);
+assert.ok(observingTime({h:2,m:30,pm:false},skyPlaces[0],Date.parse("2026-10-25T12:00Z"),0).fold);
 resetDevice();assert.equal(scoreTotal(),0);assert.deepEqual(Object.keys(loadLearning().history),[]);
 assert.equal(loadLearning().last,null);
 `,env);
