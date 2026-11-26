@@ -546,7 +546,7 @@ function finishDraw(q){
 }
 function bindDrawing(){
   const surface=$("drawSurface"),q=drawing();
-  let pointer=null, changed=false, grab=null, moved=false, selected=false;
+  let pointer=null, changed=false, grab=null, moved=false;
   function position(e){
     const svg=surface.ownerSVGElement, p=svg.createSVGPoint();
     p.x=e.clientX;p.y=e.clientY;
@@ -571,6 +571,10 @@ function bindDrawing(){
     const {x,y}=position(e);
     if(Math.hypot(x,y)<18)return;
     if(grab && !moved && Math.hypot(x-grab.x,y-grab.y)<3)return;
+    if(grab && !moved){
+      q.hand=grab.hand;
+      if(state.page==="werkstatt")workshopHand=q.hand;
+    }
     moved=true;
     const angle=(Math.atan2(x,-y)*180/Math.PI+360)%360;
     const before=digital(q.draw);
@@ -582,19 +586,22 @@ function bindDrawing(){
     if(pointer!==null)return;
     e.preventDefault();pointer=e.pointerId;surface.setPointerCapture(pointer);
     const pos=position(e),hand=hitHand(pos);
-    if(hand){
-      grab=pos;selected=q.hand!==hand;q.hand=hand;
-      if(state.page==="werkstatt")workshopHand=hand;
-    }else change(e);
+    if(hand)grab={...pos,hand};else change(e);
   };
   surface.onpointermove=e=>{if(e.pointerId===pointer)change(e);};
   function finish(e){
     if(pointer!==e.pointerId)return;
     pointer=null;
-    if(changed)finishDraw(q);else if(selected){render();save();}
-    changed=false;selected=false;moved=false;grab=null;
+    if(changed)finishDraw(q);else if(grab && moved){render();save();}
+    changed=false;moved=false;grab=null;
   }
-  surface.onpointerup=e=>{if(e.pointerId===pointer){change(e);finish(e);}};
+  surface.onpointerup=e=>{
+    if(e.pointerId!==pointer)return;
+    // A tap on a numeral sets the selected hand, even if the other hand covers it.
+    const pos=position(e);
+    if(grab && !moved && Math.hypot(pos.x-grab.x,pos.y-grab.y)<3 && Math.hypot(pos.x,pos.y)>=68)grab=null;
+    change(e);finish(e);
+  };
   surface.onpointercancel=surface.onlostpointercapture=finish;
 }
 function check(){
