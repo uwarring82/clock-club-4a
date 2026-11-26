@@ -1,5 +1,5 @@
 """Record missing workshop times using the same words and voice as the game."""
-from concurrent.futures import ThreadPoolExecutor
+from urllib.error import HTTPError
 import json
 import os
 from pathlib import Path
@@ -30,5 +30,10 @@ def record(row):
         normalize(wav, audio, 48000, "96k")
     print(name, sentence, flush=True)
 
-with ThreadPoolExecutor(max_workers=4) as pool:
-    list(pool.map(record, rows))
+for row in rows:
+    try:
+        record(row)
+    except HTTPError as error:
+        # The response contains the service's public error type, never request headers.
+        print("Speechify response:", error.read().decode()[:500], flush=True)
+        raise
