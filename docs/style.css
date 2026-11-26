@@ -38,3 +38,34 @@ dialog{border:1.5px solid #c9bad6;color:var(--ink);background:var(--paper);paddi
 .welcome-copy{padding:clamp(1.6rem,4.2vw,4rem);padding-right:0}.welcome-copy h1{font-size:clamp(3.3rem,5.7vw,5.3rem);line-height:1.02;margin:.85rem 0 1rem;letter-spacing:-.055em}.welcome-copy h1 span{color:#7e599b}.welcome-copy p{font-size:1.12rem;max-width:31rem;color:#514b56}.house-art{align-self:stretch;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 48%,#f4f2cd 0%,#edefd500 71%)}.house-art img{width:100%;height:auto;max-height:25rem;display:block}.entry-actions,.audio-actions,.training-links{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}.entry-actions{margin-top:1.3rem}.training-links{margin:1.1rem 0}.training-links button[aria-pressed=true]{background:#eee3f7;border-color:#977bb2}.audio-actions{margin:.8rem 0}.audio-actions .secondary{min-height:42px;padding:.55rem .82rem}.audio-actions .slow{background:#fff7df;border-color:#e6d5a5}
 .room-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.room-tile{display:flex;align-items:center;gap:1.35rem;border:1px solid var(--room-border);border-radius:22px;padding:1.6rem;min-height:135px;background:var(--room-color)}.room-tile:hover{border-color:#94839d}.room-tile h2{margin-bottom:.32rem}.room-tile p{max-width:35rem}.werkstatt{--room-color:#e8f1e4;--room-border:#c6dac0;--door:#a9cfb7}.hoerhoehle{--room-color:#eee7f6;--room-border:#d5c7e3;--door:#c4afdc}.sprechbuehne{--room-color:#f9e9db;--room-border:#e8ccb6;--door:#ecbb93}.raetselraum{--room-color:#fcf2ce;--room-border:#e6d8a9;--door:#ecd58c}.door-icon{width:4rem;height:4.85rem;border-radius:50% 50% 5px 5px;border:2px solid #594d59;background:var(--door);display:grid;place-items:center;flex:none;box-shadow:4px 4px 0 #594d5920}.door-icon .icon{width:2rem;height:2rem;color:#4c3b53}.recommend{min-height:12rem}.recommend .eyebrow{margin-bottom:.35rem}.stage-card>.eyebrow{margin-bottom:1.2rem}.stage-card .primary,.workshop-card .primary{margin-top:1.3rem}.minute-aid{background:#f8f4fc;text-align:center;padding:.55rem;font-size:.9rem}.exercise-card>.transcript:last-child{align-self:center;margin:.7rem 0 0}.target{flex-wrap:wrap}.history-card{margin:1.3rem 0;background:#fffefa;border:1px solid var(--line);border-radius:18px;padding:1.5rem}.history-card h3{margin:1.3rem 0 .55rem}.history-card p{margin:.4rem 0 .8rem}.table-wrap{overflow-x:auto}.history-card table{border-collapse:collapse;width:100%;font-size:.93rem}.history-card td,.history-card th{padding:.6rem .55rem;text-align:center;border-bottom:1px solid var(--line)}.history-card th:first-child{text-align:left}.history-card thead{background:#f1ebf7}.review-list{display:flex;flex-wrap:wrap;gap:.5rem;padding:0;list-style:none}.review-list li{background:#f6efdb;border-radius:8px;padding:.35rem .6rem}.text-button,.slow-word{color:#644580;text-decoration:underline;padding:.6rem;font-size:.89rem}.vocab-phrase{flex-wrap:wrap;justify-content:start}.vocab-phrase span{margin-right:auto}.vocab-phrase button.slow-word{width:auto;height:auto}.stage-card .target{font-size:1.35rem}.stage-card h2,.workshop-card h2{margin-bottom:.5rem}#audioNotice:not([hidden]){position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);z-index:2;width:max-content;max-width:90vw;background:#fff5d9;border:1px solid #d9ba70;padding:.65rem 1rem;border-radius:10px}.history-card th{line-height:1.3}
 @media(max-width:720px){.welcome{grid-template-columns:1fr;margin:1.1rem 0;border-radius:20px}.welcome-copy{padding:1.45rem 1.3rem .25rem}.welcome-copy h1{font-size:2.95rem}.welcome-copy h1 br{display:none}.welcome-copy p{font-size:1rem}.house-art img{height:clamp(160px,48vw,235px)}.entry-actions{margin-top:1rem}.room-grid{grid-template-columns:1fr;gap:.65rem}.room-tile{padding:1rem;min-height:94px;gap:1rem}.room-tile h2{font-size:1.35rem}.room-tile p{font-size:.92rem}.door-icon{width:3rem;height:3.7rem}.door-icon .icon{width:1.5rem;height:1.5rem}.history-card{padding:.9rem}.history-card td,.history-card th{padding:.45rem .2rem;font-size:.81rem}.stage-card .target{font-size:1.08rem}.stage-card>.eyebrow{margin-bottom:.65rem}}
+
+
+/* The workshop fills the viewport; the sky follows the time set on the dial. */
+body:has(#content[data-page="werkstatt"]) :is(.site-header,.footer){display:none}
+#content[data-page="werkstatt"]{width:100%;max-width:none;margin:0;padding:0}
+.day-room{position:relative;isolation:isolate;display:grid;place-items:center;min-height:100svh;padding:3.75rem 1rem 4.25rem;background:linear-gradient(to bottom,var(--zenith),var(--horizon) 78%,color-mix(in srgb,var(--horizon) 74%,#657763) 79%,color-mix(in srgb,var(--horizon) 48%,#59695f));overflow:clip}
+.sky-lights{position:absolute;inset:0;z-index:-1;pointer-events:none;clip-path:inset(0 0 22% 0)}
+.sky-lights i{position:absolute;width:clamp(2rem,7vmin,4.5rem);aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%)}
+.work-sun{left:var(--sun-x);top:var(--sun-y);background:#fff1ab;box-shadow:0 0 5vmin #ffe2a1b3}
+.work-moon{left:var(--moon-x);top:var(--moon-y);background:#f8f2d6;opacity:calc(1 - var(--light));box-shadow:0 0 3vmin #e5e3ff66}
+.day-clock{display:grid;justify-items:center;gap:clamp(.55rem,2.4vmin,1.5rem);width:100%}
+.work-dial{display:block;width:min(88vw,54svh,32rem);overflow:visible;filter:drop-shadow(var(--shade-x) var(--shade-y) 2.2vmin rgb(35 39 54 / var(--shade-opacity)))}
+.work-caption,.work-exit,.work-tools{background:#fffdf3ed;color:#383543;border:1px solid #47415033}
+.work-caption{width:min(94vw,29rem);border-radius:1.35rem;padding:.8rem 1rem .25rem;text-align:center;position:relative}
+.work-readings{display:grid;grid-template-columns:1fr 1fr;font-variant-numeric:tabular-nums}
+.work-readings div+div{border-left:1px solid #cfc8bd}
+.work-readings span,.work-readings strong{display:block}
+.work-readings span{font-size:.76rem;color:#655e64}
+.work-readings strong{font-size:clamp(1rem,3.5vw,1.6rem)}
+.work-listen{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;min-height:44px}
+.work-exit,.work-tools{position:absolute;z-index:1;border-radius:1.15rem;font-size:.9rem}
+.work-exit{left:max(1rem,env(safe-area-inset-left));top:max(.65rem,env(safe-area-inset-top));padding:.65rem .9rem}
+.work-tools{right:max(1rem,env(safe-area-inset-right));bottom:max(.65rem,env(safe-area-inset-bottom));max-width:calc(100% - 2rem)}
+.work-tools summary{padding:.65rem .9rem;cursor:pointer}
+.work-tools[open]{background:#fffdf3}
+.work-tools>div{padding:0 .8rem .8rem}
+@media (max-height:490px) and (min-width:550px){
+ .day-room{padding:3rem 1rem}
+ .day-clock{grid-template-columns:auto minmax(13rem,23rem);width:auto;align-items:center;gap:3vw}
+ .work-dial{width:min(45vw,72svh)}.work-caption{width:100%}
+}
