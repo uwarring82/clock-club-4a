@@ -314,7 +314,11 @@ function bindDrawing(){
       grab={...pos,empty:!hand,hand:hand || (Math.hypot(pos.x,pos.y)>65?"minute":q.hand)};
     }else if(hand)grab={...pos,hand};else change(e);
   };
-  surface.onpointermove=e=>{if(e.pointerId===pointer)change(e);};
+  surface.onpointermove=e=>{
+    if(e.pointerId!==pointer)return;
+    for(const point of e.getCoalescedEvents?.() || [])change(point);
+    change(e);
+  };
   function finish(e){
     if(pointer!==e.pointerId)return;
     pointer=null;
