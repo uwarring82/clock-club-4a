@@ -46,7 +46,8 @@ jobs:
                   await page.waitForFunction(()=>document.querySelector('.work-location').textContent==='Mein Standort');
                   assert.deepEqual(await page.evaluate(()=>skyPlace.slice(1)),[51.3,7.2,'Europe/Berlin']);
                   const session=await context.newCDPSession(page);
-                  await session.send('Browser.setPermission',{permission:{name:'geolocation'},setting:'denied',origin:'http://localhost:8181'});
+                  const {targetInfo}=await session.send('Target.getTargetInfo');
+                  await session.send('Browser.setPermission',{browserContextId:targetInfo.browserContextId,permission:{name:'geolocation'},setting:'denied',origin:'http://localhost:8181'});
                   await page.locator('.work-location').click();
                   await page.locator('[data-action="use-device"]').click();
                   await page.getByText('Standort nicht verfügbar.',{exact:false}).waitFor();
