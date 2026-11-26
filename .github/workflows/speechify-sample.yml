@@ -1,9 +1,13 @@
 name: Speechify voice sample
 on:
+  push:
+    branches: [audio/marian-sample]
+    paths: [.github/workflows/speechify-sample.yml]
   workflow_dispatch:
     inputs:
       voice_id:
         description: Speechify catalog voice ID for this sample
+        default: Marian
         required: true
         type: string
 permissions: {}
@@ -39,7 +43,26 @@ jobs:
           Almost! Look at the short hand again. It hasn't reached six yet. It's a quarter to six.
 
           Here's one last question. It's half past four. Where would you put the long hand?"""
-          payload = dict(input=script, voice_id=os.environ["VOICE_ID"].strip(),
+          from urllib.parse import urlencode
+          voice_id = os.environ["VOICE_ID"].strip() or "Marian"
+          if voice_id.casefold() == "marian":
+              query = {"limit": 200, "type": "shared"}
+              matches = []
+              while True:
+                  catalog = Request("https://api.speechify.ai/v1/voices?" + urlencode(query),
+                                    headers={"Authorization": "Bearer " + key})
+                  with urlopen(catalog, timeout=30) as response:
+                      page = json.load(response)
+                  voices = page if isinstance(page, list) else page["voices"]
+                  matches.extend(v for v in voices if v["display_name"].casefold() == "marian")
+                  if isinstance(page, list) or not page.get("has_more"):
+                      break
+                  query["cursor"] = page["next_cursor"]
+              if len(matches) != 1:
+                  raise SystemExit(f"Found {len(matches)} catalog voices named Marian.")
+              voice_id = matches[0]["id"]
+              print("Marian voice ID:", voice_id)
+          payload = dict(input=script, voice_id=voice_id,
                          language="en-GB", model="simba-3.5", audio_format="mp3")
           request = Request("https://api.speechify.ai/v1/audio/speech",
                             data=json.dumps(payload).encode(),
