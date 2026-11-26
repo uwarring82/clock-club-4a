@@ -28,8 +28,9 @@ function shuffle(list) {
 }
 function makeQuestion(target,kind,first=false) {
   const {h,m} = target;
+  const otherHour = kind==="hear" && m>30 ? normHour(h+1) : normHour(h-1);
   const distractors = m === 0 ? [{h:normHour(h+3),m}, {h:normHour(h+6),m}] :
-    [{h:normHour(h-1),m}, {h,m:m===30?15:60-m}];
+    [{h:otherHour,m}, {h,m:m===30?15:60-m}];
   const options = [distractors[0],target,distractors[1]];
   return {target,kind,options:first?options:shuffle(options),selected:null,solved:false,
     mistakes:0,assisted:false,feedback:"",hand:"hour",draw:{h:h===12?4:12,m:0},transcript:false};
@@ -77,10 +78,11 @@ function makeRound(mode,level,history,first=false) {
   }
   return {idx:0,done:false,items};
 }
-function suggestedRoom([read,hear,set]) {
+function suggestedRoom({read,whole,quarter,set}) {
+  if (whole!==true) return {page:"hoerhoehle",level:0,why:"Fang in der Hörhöhle mit vollen Stunden an. Hör auf die Zahl vor „o’clock“."};
   if (read===false || set===false) return {page:"werkstatt",level:0,why:"Drehe die Zeiger selbst. Du siehst und hörst, wie sich die Zeit verändert."};
-  if (hear===false) return {page:"hoerhoehle",level:1,why:"In der Hörhöhle kannst du „quarter past“ und „quarter to“ langsam anhören und vergleichen."};
-  if ([read,hear,set].every(v=>v===true)) return {page:"raetselraum",level:1,why:"Du hast die Uhr gelesen, gehört und gestellt. Probier eine Runde mit halben und Viertelstunden."};
+  if (quarter!==true) return {page:"hoerhoehle",level:1,why:"In der Hörhöhle kannst du „quarter past“ und „quarter to“ langsam anhören und vergleichen."};
+  if (read===true && set===true) return {page:"raetselraum",level:1,why:"Du hast die Uhr gelesen, gehört und gestellt. Probier eine Runde mit halben und Viertelstunden."};
   return {page:"raetselraum",level:0,why:"Starte mit fünf kleinen Rätseln zu vollen Stunden. Du kannst den Raum jederzeit wechseln."};
 }
 function restoreRound(r,mode,level) {

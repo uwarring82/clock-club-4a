@@ -45,15 +45,51 @@ for(const mode of [...kinds,"mixed"])for(let level=0;level<3;level++){
     }
   }
 }
-assert.equal(suggestedRoom([true,false,true]).page,"hoerhoehle");
-assert.equal(suggestedRoom([false,true,true]).page,"werkstatt");
-assert.equal(suggestedRoom([null,null,null]).level,0);
-assert.equal(suggestedRoom([true,true,true]).level,1);
-state.page="ankommen";guide=startGuide();advanceGuide(true);advanceGuide(true);advanceGuide(true);
-assert.equal(guide.step,3);assert.equal(scoreTotal(),2);assert.equal(Object.keys(data.history).length,0);
+// Follow the same paths as the entrance buttons, including skipped answers.
+function guideAnswer(result){
+  const q=guideQuestion();
+  if(result!==null){
+    if(q.kind==="set")q.draw=result?{...q.target}:{h:1,m:0};
+    else q.selected=q.options.findIndex(option=>sameTime(option,q.target)===result);
+  }
+  advanceGuide(result===null);
+}
+function guidePath(read,whole,quarter,set){
+  state.page="ankommen";guide=startGuide();
+  guideAnswer(read);
+  assert.equal(guideQuestion().target.m,0);
+  guideAnswer(whole);
+  if(whole===true){
+    assert.equal(guideQuestion().kind,"hear");assert.equal(guideQuestion().target.m,45);
+    assert.ok(guideQuestion().options.some(t=>t.h===3&&t.m===45));
+    guideAnswer(quarter);
+  }
+  assert.equal(guideQuestion().kind,"set");
+  guideAnswer(set);
+  assert.equal(guideQuestion(),null);assert.equal(guide.step,whole===true?4:3);
+  const rec=suggestedRoom(guide.results);
+  return [rec.page,rec.level].join("/");
+}
+assert.equal(guidePath(true,false,null,true),"hoerhoehle/0");
+assert.equal(guidePath(null,null,null,null),"hoerhoehle/0");
+assert.equal(guidePath(true,true,false,true),"hoerhoehle/1");
+assert.equal(guidePath(true,true,null,true),"hoerhoehle/1");
+assert.equal(guidePath(true,true,true,true),"raetselraum/1");
+assert.equal(guidePath(false,true,true,true),"werkstatt/0");
+assert.equal(scoreTotal(),2);assert.equal(Object.keys(data.history).length,0);
+for(let h=1;h<=12;h++)for(const m of [35,40,45,50,55]){
+  for(const kind of kinds){
+    const options=makeQuestion({h,m},kind).options;
+    const shifted=normHour(kind==="hear"?h+1:h-1);
+    assert.ok(options.some(t=>t.h===shifted&&t.m===m));
+    assert.ok(options.some(t=>t.h===h&&t.m===60-m));
+  }
+}
 state.page="hoerhoehle";state.mode="hear";state.level=1;
-const r=newRound(),q=current();
-q.selected=q.options.findIndex(t=>!sameTime(t,q.target));check();
+const r=newRound();
+const q=r.items[0]=makeQuestion({h:2,m:45},"hear");
+q.selected=q.options.findIndex(t=>t.h===3&&t.m===45);check();
+assert.match(q.feedback,/nächste volle Stunde/);
 assert.equal(q.mistakes,1);assert.equal(scoreTotal(),2);
 q.selected=q.options.findIndex(t=>sameTime(t,q.target));check();check();
 assert.equal(scoreTotal(),3);
