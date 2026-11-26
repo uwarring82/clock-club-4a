@@ -1,9 +1,6 @@
 name: Generate Marian lesson audio
 on:
   workflow_dispatch:
-  push:
-    branches: [audio/marian-lesson-set]
-    paths: [.github/workflows/marian-lessons.yml]
 permissions:
   contents: write
 concurrency: marian-lesson-audio
@@ -27,7 +24,7 @@ jobs:
           python3 scripts/prepare_audio.py "$RUNNER_TEMP/marian" docs/audio
           python3 scripts/export_offline.py
           node scripts/verify.cjs
-          test "$(git diff --name-only -- docs/audio | wc -l)" -eq 144
+          test "$(find "$RUNNER_TEMP/marian" -name '*.wav' | wc -l)" -eq 144
       - name: Save verified edition on the working branch
         run: |
           git config user.name "github-actions[bot]"
