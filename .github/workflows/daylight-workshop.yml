@@ -2,7 +2,7 @@ name: Verify daylight workshop
 on:
   push:
     branches: [feature/daylight-dial]
-    paths: [.github/workflows/daylight-workshop.yml]
+    paths: [.github/workflows/daylight-workshop.yml, docs/app.js, docs/style.css, scripts/verify.cjs]
 permissions:
   contents: write
 jobs:
