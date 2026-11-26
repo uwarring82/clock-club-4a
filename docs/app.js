@@ -43,10 +43,15 @@ function hero(title,sub,levelControl=false){
   return '<section class="hero"><div><div class="eyebrow hero-label">'+icon("cap")+' ENGLISCH · KLASSE 4A</div><h1>'+title+'</h1><p>'+sub+'</p></div>'+
     (levelControl?'<div class="level-picker">'+icon("levels")+'<select id="level" aria-label="Übungsstufe">'+levels.map((l,i)=>'<option value="'+i+'" '+(i===state.level?'selected':'')+'>Stufe '+(i+1)+' · '+l+'</option>').join("")+'</select>'+icon("down")+'</div>':'')+'</section>';
 }
+const welcomeParagraphs = [
+  "Welcome to the Clock Club! Here you can learn to tell the time in English. Look at the clock. Where does the long hand point when it’s half past three? In the clock workshop, you can move the hands and hear the time you’ve made.",
+  "To get started, choose the first button to play straight away, or the second for a few questions that help you pick a room. You can listen to a time slowly, say it out loud, or try five clock puzzles. Every puzzle you solve earns a star.",
+  "Teachers, try playing a time for the class. Ask everyone to show it on a clock, then listen again together. Parents, take turns with your child: one of you sets the hands, and the other says the time. Your stars stay in this browser, so you can come back and practise again."
+];
 function entrance(){
   return '<section class="welcome"><div class="welcome-copy"><div class="eyebrow">'+icon("cap")+' ENGLISCH · KLASSE 4A</div><h1 lang="en">Welcome to <br>Clock Club<span>!</span></h1><p>Wie spät ist es auf Englisch? Öffne die Tür und probiere es aus.</p><div class="entry-actions">'+
     roomLink(data.last?.page||"raetselraum",icon("game")+"Direkt spielen","primary")+roomLink("ankommen","Hilf mir beim Einstieg")+btn("welcome",icon("sound")+" Begrüßung anhören")+
-    '</div></div><div class="house-art"><img src="assets/clubhouse.svg" alt="Das Clubhaus mit einer Uhr über der offenen Tür"></div></section>';
+    '</div><details><summary>Begrüßung mitlesen</summary><div lang="en">'+welcomeParagraphs.map(line=>'<p>'+line+'</p>').join("")+'</div></details></div><div class="house-art"><img src="assets/clubhouse.svg" alt="Das Clubhaus mit einer Uhr über der offenen Tür"></div></section>';
 }
 const roomIcons={werkstatt:"clock",hoerhoehle:"headphones",sprechbuehne:"sound",raetselraum:"game"};
 function roomOverview(){
@@ -308,7 +313,7 @@ main.addEventListener("change",e=>{
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   const d=b.dataset,action=d.action;
-  if(action==="welcome"){playWelcome();return;}
+  if(action==="welcome"){if(welcomePlaying)stopAudio();else playWelcome();return;}
   if(b.id==="closeHelp"||action==="dismiss"){$("helpDialog").close();render();return;}
   if(d.word!==undefined||d.slowWord!==undefined){play(vocabulary[Number(d.word??d.slowWord)][2],d.slowWord!==undefined);return;}
   const q=activeQuestion();

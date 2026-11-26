@@ -1,7 +1,15 @@
 "use strict";
 const player = new Audio();
 let playbackId = 0;
+let welcomePlaying = false;
+function setWelcomePlaying(active) {
+  welcomePlaying = active;
+  const button = document.querySelector('[data-action="welcome"]');
+  if (button) button.innerHTML = icon("sound") + (active ? " Begrüßung stoppen" : " Begrüßung anhören");
+}
 function stopAudio() {
+  if (welcomePlaying) setWelcomePlaying(false);
+  player.onended = null;
   playbackId++;
   player.onerror = null;
   player.pause();
@@ -45,7 +53,8 @@ function playWelcome() {
   const id = playbackId;
   player.src = typeof embeddedAudio === "undefined" ? "audio/welcome.mp3" : embeddedAudio.welcome;
   player.playbackRate = 1;
-  player.play().catch(error => {
+  player.onended = () => setWelcomePlaying(false);
+  player.play().then(() => { if (id === playbackId) setWelcomePlaying(true); }).catch(error => {
     if (id !== playbackId || error.name === "AbortError" || error.name === "NotAllowedError") return;
     say("Begrüßung nicht verfügbar.");
   });
