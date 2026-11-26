@@ -1,0 +1,68 @@
+name: Local sky release check
+on:
+  push:
+    branches: [feature/local-sky]
+    paths: [.github/workflows/local-sky-release.yml]
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/verify.cjs && python3 scripts/export_offline.py
+      - name: Check city, device permission, refusal and standalone
+        run: |
+          npm install --prefix "$RUNNER_TEMP/clock-test" playwright-core --silent
+          export NODE_PATH="$RUNNER_TEMP/clock-test/node_modules" CHROME="$(command -v google-chrome)"
+          python3 -m http.server 8181 --directory docs >/tmp/clock-server.log 2>&1 &
+          node <<'JS'
+          const {chromium}=require('playwright-core'), assert=require('node:assert/strict');
+          (async()=>{
+            const browser=await chromium.launch({executablePath:process.env.CHROME,args:['--no-sandbox']});
+            try{
+              for(const offline of [false,true]){
+                const context=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Europe/Berlin',
+                  geolocation:{latitude:51.348,longitude:7.246},permissions:['geolocation']});
+                const page=await context.newPage();
+                const errors=[];page.on('pageerror',error=>errors.push(error.message));
+                const requests=[];page.on('request',request=>requests.push(request.url()));
+                await page.goto(offline?'file://'+process.cwd()+'/docs/Clock-Club-4a.html#werkstatt':'http://localhost:8181/#werkstatt');
+                await page.getByRole('heading',{name:'Wo spielst du?'}).waitFor();
+                await page.selectOption('#skyCity',{label:'Sydney'});
+                await page.getByRole('button',{name:'Ort übernehmen'}).click();
+                await page.getByRole('button',{name:'Spielort ändern'}).waitFor();
+                assert.equal(await page.locator('.work-location').innerText(),'Sydney');
+                await page.locator('.work-tools summary').click();
+                assert.match(await page.locator('#skyDescription').innerText(),/beleuchtet/);
+                await page.locator('[data-action="midnight"]').click();
+                const midnight=await page.locator('#dayRoom').getAttribute('style');
+                await page.locator('[data-action="noon"]').click();
+                assert.notEqual(await page.locator('#dayRoom').getAttribute('style'),midnight);
+                assert.ok(await page.locator('#moonLimb path').getAttribute('d'));
+                if(!offline){
+                  await page.locator('.work-location').click();
+                  await page.locator('[data-action="use-device"]').click();
+                  await page.waitForFunction(()=>document.querySelector('.work-location').textContent==='Mein Standort');
+                  assert.deepEqual(await page.evaluate(()=>skyPlace.slice(1)),[51.3,7.2,'Europe/Berlin']);
+                  const session=await context.newCDPSession(page);
+                  await session.send('Browser.setPermission',{permission:{name:'geolocation'},setting:'denied',origin:'http://localhost:8181'});
+                  await page.locator('.work-location').click();
+                  await page.locator('[data-action="use-device"]').click();
+                  await page.getByText('Standort nicht verfügbar.',{exact:false}).waitFor();
+                  await page.locator('[data-action="dismiss"]').click();
+                }
+                assert.deepEqual(errors,[]);
+                assert.ok(requests.every(url=>url.startsWith('file:')||url.startsWith('data:')||url.startsWith('http://localhost:8181/')));
+                await context.close();
+              }
+            }finally{await browser.close();}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Save tested offline edition
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/Clock-Club-4a.html
+          git commit -m "Embed the local sky in the offline workshop"
+          git push origin HEAD:feature/local-sky
