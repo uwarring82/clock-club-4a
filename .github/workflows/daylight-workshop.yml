@@ -33,14 +33,19 @@ jobs:
                 const dial=page.locator('.work-dial'), box=await dial.boundingBox();
                 const point=k=>({x:box.x+box.width*(0.5+81/220*Math.sin(k*Math.PI/30)),y:box.y+box.height*(0.5-81/220*Math.cos(k*Math.PI/30))});
                 const pos=point(0);
-                await page.mouse.move(pos.x,pos.y);await page.mouse.down();
-                for(let k=1;k<=65;k++){const p=point(k);await page.mouse.move(p.x,p.y);}
+                const touch=width<500?await page.context().newCDPSession(page):null;
+                async function sendTouch(type,pt){
+                  await touch.send('Input.dispatchTouchEvent',{type,touchPoints:pt?[{x:pt.x,y:pt.y}]:[]});
+                }
+                if(touch)await sendTouch('touchStart',pos);
+                else{await page.mouse.move(pos.x,pos.y);await page.mouse.down();}
+                for(let k=1;k<=65;k++){const p=point(k);if(touch)await sendTouch('touchMove',p);else await page.mouse.move(p.x,p.y);}
                 assert.match(await page.locator('#workReadings').innerText(),/01:05 Uhr/);
                 assert.match(await page.locator('#workPhrase').innerText(),/five past one/);
-                await page.mouse.up();
+                if(touch)await sendTouch('touchEnd');else await page.mouse.up();
                 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
                 await page.locator('.work-exit').click();
-                assert.ok(await page.locator('.site-header').isVisible());
+                await page.locator('.site-header').waitFor({state:'visible'});
                 await page.close();
               }
             }finally{await browser.close();}
