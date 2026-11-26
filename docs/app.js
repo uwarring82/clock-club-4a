@@ -103,12 +103,40 @@ function game(){
   else body='<div class="play-grid">'+panel(q.kind==="set"?q.draw:q.target,{hidden:q.kind==="hear"&&!q.solved,editable:q.kind==="set"&&!q.solved,tip:!puzzle()&&!q.solved,minutes:!puzzle()&&!q.solved&&q.kind!=="hear"&&(q.mistakes>0||q.assisted)})+exercise(r,q)+'</div>';
   return hero(title,sub,true)+body+(state.page==="spielplatz"?trainingLinks():"")+roomLink("raeume","Alle Lernräume","secondary back");
 }
+function workshopSky(t){
+  // Fixed teaching day: the sun crosses the horizon at 06:00 and 18:00.
+  const hours=t.h%12+(t.pm?12:0)+t.m/60, angle=(hours-6)*Math.PI/12;
+  const altitude=Math.sin(angle), east=Math.cos(angle);
+  const stops=[
+    [-1,[19,27,57],[52,58,93]],[-0.26,[44,55,98],[108,94,137]],
+    [0,[116,138,182],[255,182,130]],[0.28,[125,182,218],[255,228,185]],
+    [1,[113,189,228],[218,240,242]]
+  ];
+  const i=stops.findIndex((stop,index)=>index>0 && altitude<=stop[0]);
+  const [a,b]=[stops[i-1],stops[i]], f=(altitude-a[0])/(b[0]-a[0]);
+  const color=k=>"rgb("+a[k].map((v,j)=>Math.round(v+(b[k][j]-v)*f)).join(",")+")";
+  const light=Math.max(0,Math.min(1,(altitude+0.09)/0.24));
+  return "--zenith:"+color(1)+";--horizon:"+color(2)+";--sun-x:"+(50-44*east)+"%;--sun-y:"+(77-64*altitude)+"%;--moon-x:"+(50+44*east)+"%;--moon-y:"+(77+64*altitude)+"%;--light:"+light+";--shade-x:"+(east*17)+"vmin;--shade-y:"+(3+6*(1-Math.max(0,altitude)))+"vmin;--shade-opacity:"+(0.07+light*0.15);
+}
+function workshopReadings(t){
+  const special=specialTime(t);
+  const de=clock24(t)+" Uhr"+(special==="noon"?" · Mittag":special==="midnight"?" · Mitternacht":"");
+  const en=t.h+":"+String(t.m).padStart(2,"0")+(t.pm?" pm":" am");
+  return '<div lang="de"><span>Deutsch</span><strong>'+de+'</strong></div>'+
+    '<div lang="en"><span>English</span><strong>'+en+'</strong></div>';
+}
 function workshop(){
-  return hero("Uhrenwerkstatt","Drehe die Zeiger. Die Uhr spricht deine Zeit auf Englisch.")+'<div class="play-grid">'+panel(data.work,{editable:true,title:"Deine Uhr"})+
-    '<section class="exercise-card workshop-card"><h2>Deine Wunschzeit</h2><p>Zieh den langen Zeiger von Strich zu Strich. Jeder Strich zählt eine Minute. Lass los und hör dir die Zeit an.</p>'+
-    '<div class="target"><strong>'+clock24(data.work)+' Uhr</strong><span lang="en">'+words(data.work)+'</span></div>'+handControls(workshopHand)+audioButtons("Noch einmal hören")+
-    '<h3>Wenn beide Zeiger auf zwölf stehen</h3><p>Um 00:00 Uhr beginnt ein neuer Tag: <span lang="en">midnight</span>. Zwölf Stunden später ist Mittag: <span lang="en">noon</span>. <span lang="en">High noon</span> bedeutet genau zwölf Uhr mittags.</p><div class="entry-actions">'+btn("midnight","00:00 · Midnight")+btn("noon","12:00 · Noon")+'</div>'+
-    roomLink("spielplatz","Ablesen und Zeichnen üben","primary")+'</section></div>'+roomLink("raeume","Alle Lernräume","secondary back");
+  const t=data.work;
+  return '<section class="day-room" id="dayRoom" style="'+workshopSky(t)+'" aria-label="Uhrenwerkstatt">'+
+    '<div class="sky-lights" aria-hidden="true"><i class="work-sun"></i><i class="work-moon"></i></div>'+
+    '<a class="work-exit" href="#raeume">‹ Lernräume</a><div class="day-clock">'+
+    '<svg class="work-dial" viewBox="170 59 220 220" role="img" aria-labelledby="dialDesc"><title id="dialDesc">Uhrzeit '+clock24(t)+'</title>'+
+    '<circle cx="280" cy="169" r="104" fill="#faf8ed" stroke="#4b4c58" stroke-width="4"/><g class="dial-text">'+labels+'</g><g id="hands">'+hands(t)+'</g>'+
+    '<circle id="drawSurface" cx="280" cy="169" r="104" fill="transparent"/></svg>'+
+    '<div class="work-caption"><div id="workReadings" class="work-readings">'+workshopReadings(t)+'</div>'+
+    '<button class="work-listen" data-action="listen" aria-label="Englische Uhrzeit anhören">'+icon("sound")+'<span lang="en" id="workPhrase">'+words(t)+'</span></button></div></div>'+
+    '<details class="work-tools"><summary>Uhr einstellen</summary><div>'+handControls(workshopHand)+
+    btn("midnight","00:00 · Midnight")+btn("noon","12:00 · Noon / High noon")+'</div></details></section>';
 }
 function stage(){
   const phase=data.phase,t=data.stage;
@@ -179,7 +207,10 @@ function drawing(){
 function render(){
   const active=document.activeElement,marker=active?.dataset?Object.entries(active.dataset)[0]:null;
   const pages={eingang:entrance,ankommen:arrival,raeume:roomOverview,werkstatt:workshop,sprechbuehne:stage,wortschatz:lexicon,sterne:trophy};
+  const toolsOpen=state.page==="werkstatt" && main.querySelector(".work-tools")?.open;
+  main.dataset.page=state.page;
   main.innerHTML=practice()?game():pages[state.page]();
+  if(toolsOpen)main.querySelector(".work-tools").open=true;
   document.querySelectorAll("[data-nav]").forEach(a=>{
     const currentNav=a.dataset.nav===state.page || (a.dataset.nav==="raeume" && Object.hasOwn(roomNames,state.page));
     if(currentNav)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");
@@ -218,6 +249,11 @@ function shiftHand(q,step){
 }
 function updateHands(q){
   $("hands").innerHTML=hands(q.draw);
+  if(state.page==="werkstatt"){
+    $("dayRoom").setAttribute("style",workshopSky(q.draw));
+    $("workReadings").innerHTML=workshopReadings(q.draw);
+    $("workPhrase").textContent=words(q.draw);
+  }
   $("dialDesc").textContent="Kurzer Zeiger auf Stunde "+q.draw.h+", Minuten: "+q.draw.m+".";
 }
 function finishDraw(q){
@@ -263,7 +299,7 @@ function bindDrawing(){
       const hour=q.hand==="hour";
       let delta=hour?Math.round(angle/30)%12-q.draw.h%12:Math.round(angle/6)%60-q.draw.m;
       const cycle=hour?12:60;
-      if(grab && Math.abs(delta)>cycle/2)delta-=Math.sign(delta)*cycle;
+      if(grab && moved && Math.abs(delta)>cycle/2)delta-=Math.sign(delta)*cycle;
       advanceWorkshop(q.draw,delta*(hour?60:1));
     }else if(q.hand==="hour")q.draw.h=normHour(Math.round(angle/30));
     else q.draw.m=Math.round(angle/30)%12*5;
@@ -273,9 +309,16 @@ function bindDrawing(){
     if(pointer!==null)return;
     e.preventDefault();pointer=e.pointerId;surface.setPointerCapture(pointer);
     const pos=position(e),hand=hitHand(pos);
-    if(hand)grab={...pos,hand};else change(e);
+    if(state.page==="werkstatt"){
+      stopAudio();
+      grab={...pos,empty:!hand,hand:hand || (Math.hypot(pos.x,pos.y)>65?"minute":q.hand)};
+    }else if(hand)grab={...pos,hand};else change(e);
   };
-  surface.onpointermove=e=>{if(e.pointerId===pointer)change(e);};
+  surface.onpointermove=e=>{
+    if(e.pointerId!==pointer)return;
+    for(const point of e.getCoalescedEvents?.() || [])change(point);
+    change(e);
+  };
   function finish(e){
     if(pointer!==e.pointerId)return;
     pointer=null;
@@ -286,7 +329,7 @@ function bindDrawing(){
     if(e.pointerId!==pointer)return;
     // A tap on a numeral sets the selected hand, even if the other hand covers it.
     const pos=position(e);
-    if(grab && !moved && Math.hypot(pos.x-grab.x,pos.y-grab.y)<3 && Math.hypot(pos.x,pos.y)>=68)grab=null;
+    if(grab && !moved && Math.hypot(pos.x-grab.x,pos.y-grab.y)<3 && (grab.empty || Math.hypot(pos.x,pos.y)>=68))grab=null;
     change(e);finish(e);
   };
   surface.onpointercancel=surface.onlostpointercapture=finish;

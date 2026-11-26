@@ -13,10 +13,11 @@ class AudioMock {
   pause(){}
   play(){playback.push({src:this.src,rate:this.playbackRate,pitch:this.preservesPitch});return Promise.resolve();}
 }
+const phraseElement = {textContent:""};
 const env = {
   Audio:AudioMock,SpeechSynthesisUtterance:class {},location:{hash:""},
   localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},
-  document:{activeElement:null,querySelector:()=>element,getElementById:()=>element,querySelectorAll:()=>[],addEventListener(){}},
+  document:{activeElement:null,querySelector:()=>element,getElementById:id=>id==="workPhrase"?phraseElement:element,querySelectorAll:()=>[],addEventListener(){}},
   window:{scrollTo(){},addEventListener(){},SpeechSynthesisUtterance:class {},
     speechSynthesis:{cancel(){},getVoices:()=>[{lang:"en-GB",localService:true}],speak:u=>speech.push(u)}},
   assert,playback,speech
@@ -148,6 +149,20 @@ shiftHand(drawing(),1);assert.equal(clock24(data.work),"00:00");assert.equal(wor
 shiftHand(drawing(),-1);assert.equal(clock24(data.work),"23:59");
 data.work.pm=false;shiftHand(drawing(),1);assert.equal(words(data.work),"It’s noon.");
 dragHand(0,-81,8.5,-80.5);assert.equal(clock24(data.work),"12:01");
+// Two full forward turns, then back through midnight, without lifting the pointer.
+data.work={h:11,m:58,pm:true};workshopHand="minute";bindDrawing();
+function minuteEvent(tick){
+  const angle=tick*Math.PI/30;
+  return {pointerId:8,clientX:280+96*Math.sin(angle),clientY:169-96*Math.cos(angle),preventDefault(){}};
+}
+surface.onpointerdown(minuteEvent(58));
+for(let minute=59;minute<=178;minute++)surface.onpointermove(minuteEvent(minute));
+assert.equal(clock24(data.work),"01:58");assert.equal($("workPhrase").textContent,words(data.work));
+for(let minute=177;minute>=58;minute--)surface.onpointermove(minuteEvent(minute));
+surface.onpointerup(minuteEvent(58));
+assert.equal(clock24(data.work),"23:58");
+assert.notEqual(workshopSky(data.work),workshopSky({h:12,m:0,pm:true}));
+data.work={h:12,m:1,pm:true};
 save();assert.equal(loadLearning().work.m,1);assert.equal(loadLearning().work.pm,true);
 assert.equal(words({h:12,m:59}),"It’s one minute to one.");
 assert.equal(words({h:2,m:23}),"It’s twenty-three minutes past two.");
