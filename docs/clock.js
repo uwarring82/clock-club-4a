@@ -23,8 +23,21 @@ function modeArt(mode){
 }
 const hourNames=["twelve","one","two","three","four","five","six","seven","eight","nine","ten","eleven"];
 const minuteNames=["","five","ten","quarter","twenty","twenty-five","half","twenty-five","twenty","quarter","ten","five"];
+function specialTime(t){
+ return t.h===12 && t.m===0 && typeof t.pm==="boolean" ? (t.pm?"noon":"midnight") : "";
+}
+function clock24(t){
+ return String(t.h%12+(t.pm?12:0)).padStart(2,"0")+":"+String(t.m).padStart(2,"0");
+}
 function words(time){
  const {h,m}=time;
+ if(specialTime(time))return "It’s "+specialTime(time)+".";
+ if(m%5){
+   const n=Math.min(m,60-m);
+   const small=["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+   const count=n<20?small[n]:"twenty-"+small[n-20];
+   return "It’s "+count+(n===1?" minute":" minutes")+(m<30?" past ":" to ")+hourNames[(h+(m>30?1:0))%12]+".";
+ }
  if(m===0)return "It’s "+hourNames[h%12]+" o’clock.";
  return "It’s "+minuteNames[m/5]+(m<=30?" past "+hourNames[h%12]:" to "+hourNames[(h+1)%12])+".";
 }
@@ -59,7 +72,7 @@ function clockArt(time,hidden,editable,withWords=false){
  const [x,y]=point((time.h%12)*30,60);
  const word=withWords?'<g aria-hidden="true"><rect x="'+(x-19)+'" y="'+(y-6)+'" width="38" height="13" rx="5" fill="#f1e8f8"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="10" fill="#594278">'+hourNames[time.h%12]+'</text></g>':"";
 
- const desc=hidden?'Die Zeiger erscheinen nach der Hörübung.':'Kurzer Zeiger auf Stunde '+time.h+', langer Zeiger auf '+(time.m/5||12)+'.';
+ const desc=hidden?'Die Zeiger erscheinen nach der Hörübung.':'Kurzer Zeiger auf Stunde '+time.h+', Minuten: '+time.m+'.';
  return '<svg class="alarm-art" viewBox="0 0 560 314" role="img" aria-labelledby="dialDesc"><title id="dialDesc">'+desc+'</title>'+ornaments+dialShell+
  (hidden?'<g fill="#c9bcd8"><circle cx="280" cy="169" r="46" fill="#efe8f1"/><path d="m265 161 9 .1 12-9v33l-12-9h-9z" fill="#8065a5"/><path d="M292 157q12 12 0 24" fill="none" stroke="#8065a5" stroke-width="4" stroke-linecap="round"/></g>':
  '<g class="dial-text">'+labels+'</g><g id="hands">'+hands(time)+'</g>'+word)+
