@@ -125,6 +125,24 @@ assert.equal(speech.length,0);
 const staleError=player.onerror;play({h:5,m:55});staleError();assert.equal(speech.length,0);
 player.onerror();player.onerror();assert.equal(speech.length,1);
 assert.equal(speech[0].lang,"en-GB");assert.equal(playback.at(-1).rate,1);
+// Touch the minute tip even though the hour control is active, then grab the hour.
+state.page="werkstatt";data.work={h:12,m:0};workshopHand="hour";
+const surface=$("drawSurface");
+surface.setPointerCapture=()=>{};
+surface.ownerSVGElement={createSVGPoint:()=>({matrixTransform(){return this;}}),getScreenCTM:()=>({inverse(){}})};
+function dragHand(fromX,fromY,toX,toY){
+  bindDrawing();
+  const event=(x,y)=>({pointerId:1,clientX:280+x,clientY:169+y,preventDefault(){}});
+  surface.onpointerdown(event(fromX,fromY));
+  surface.onpointermove(event(toX,toY));
+  surface.onpointerup(event(toX,toY));
+}
+dragHand(0,-81,0,81);
+assert.equal(digital(data.work),"12:30");
+dragHand(15,-57,59,0);
+assert.equal(digital(data.work),"3:30");
+dragHand(0,76,0,76);
+assert.equal(digital(data.work),"6:30");
 resetDevice();assert.equal(scoreTotal(),0);assert.deepEqual(Object.keys(loadLearning().history),[]);
 assert.equal(loadLearning().last,null);
 `,env);
