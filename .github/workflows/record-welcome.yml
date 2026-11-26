@@ -10,22 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y ffmpeg)
-      - name: Record and normalize welcome
-        env:
-          SPEECHIFY_API_KEY: ${{ secrets.SPEECHIFY_API_KEY }}
-        shell: python
-        run: |
-          import json, os, re, sys
-          from pathlib import Path
-          sys.path.insert(0, "scripts")
-          from generate_marian import synthesize
-          from prepare_audio import normalize
-          source = Path(os.environ["RUNNER_TEMP"]) / "welcome.wav"
-          app = Path("docs/app.js").read_text()
-          paragraphs = json.loads(re.search(r"const welcomeParagraphs = (\[.*?\]);", app, re.S)[1])
-          source.write_bytes(synthesize("\n\n".join(paragraphs), os.environ["SPEECHIFY_API_KEY"]))
-          normalize(source, Path("docs/audio"), 48000, "96k")
       - name: Build, test and save greeting
         run: |
           python3 scripts/export_offline.py
