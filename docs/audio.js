@@ -16,7 +16,7 @@ function stopAudio() {
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
 }
 function clipSource(t) {
-  const filename = t.h + "-" + t.m;
+  const filename = specialTime(t) || (t.h + "-" + t.m);
   return typeof embeddedAudio === "undefined" ? "audio/" + filename + ".mp3" : embeddedAudio[filename];
 }
 function play(t, slow=false) {

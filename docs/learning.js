@@ -13,8 +13,9 @@ const kinds = ["read", "set", "hear"];
 const minutesByLevel = [[0], [15,30,45], [5,10,15,20,25,30,35,40,45,50,55]];
 const learningKey = "clock-club-learning-v1";
 const normHour = h => ((h - 1) % 12 + 12) % 12 + 1;
-const validTime = t => t && Number.isInteger(t.h) && t.h >= 1 && t.h <= 12 &&
-  Number.isInteger(t.m) && t.m >= 0 && t.m < 60 && t.m % 5 === 0;
+const validMinuteTime = t => t && Number.isInteger(t.h) && t.h >= 1 && t.h <= 12 &&
+  Number.isInteger(t.m) && t.m >= 0 && t.m < 60 ;
+const validTime = t => validMinuteTime(t) && t.m % 5 === 0;
 const sameTime = (a,b) => a.h === b.h && a.m === b.m;
 const count = n => Number.isSafeInteger(n) && n >= 0 ? n : 0;
 const validLevel = l => [0,1,2].includes(l);
@@ -103,7 +104,7 @@ function restoreRound(r,mode,level) {
 function loadLearning() {
   let raw;
   try { raw=JSON.parse(localStorage.getItem(learningKey)); } catch {}
-  const clean={last:null,rounds:{},history:{},work:{h:3,m:0},stage:{h:3,m:0},phase:0};
+  const clean={last:null,rounds:{},history:{},work:{h:3,m:0,pm:false},stage:{h:3,m:0},phase:0};
   if (!raw || typeof raw!=="object") return clean;
   const last=raw.last;
   if (last && Object.hasOwn(roomNames,last.page) && validLevel(last.level) && [...kinds,"mixed"].includes(last.mode))
@@ -116,7 +117,7 @@ function loadLearning() {
     if(!/^(read|set|hear)\/([1-9]|1[0-2]):[0-5][05]$/.test(id)|| !e || typeof e!=="object")continue;
     clean.history[id]={alone:count(e.alone),help:count(e.help),retry:count(e.retry),misses:count(e.misses),review:e.review===true};
   }
-  if(validTime(raw.work)) clean.work=raw.work;
+  if(validMinuteTime(raw.work)) clean.work={h:raw.work.h,m:raw.work.m,pm:raw.work.pm===true};
   if(validTime(raw.stage)) clean.stage=raw.stage;
   clean.phase=[0,1,2].includes(raw.phase)?raw.phase:0;
   return clean;

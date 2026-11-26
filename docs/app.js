@@ -69,7 +69,7 @@ function handControls(hand){
   return '<div class="hand-pick" role="group" aria-label="Zeiger wählen">'+["hour","minute"].map((k,i)=>
     '<button data-hand="'+k+'" aria-pressed="'+(hand===k)+'"><b class="dot '+k+'"></b>'+(i?"Minute":"Stunde")+'</button>').join("")+
     '</div><div class="step-control"><button class="icon-button" data-action="minus" aria-label="Zeiger zurückstellen">'+icon("minus")+'</button><span>'+
-    (hand==="hour"?"Eine Stunde":"Fünf Minuten")+'</span><button class="icon-button" data-action="plus" aria-label="Zeiger vorstellen">'+icon("plus")+'</button></div>';
+    (hand==="hour"?"Eine Stunde":state.page==="werkstatt"?"Eine Minute":"Fünf Minuten")+'</span><button class="icon-button" data-action="plus" aria-label="Zeiger vorstellen">'+icon("plus")+'</button></div>';
 }
 function answers(q,asDigits=false){
   return '<div class="answers" role="group" aria-label="Antwort auswählen">'+q.options.map((t,i)=>'<button data-answer="'+i+'" aria-pressed="'+(q.selected===i)+'" class="choice '+(q.selected===i?'selected':'')+'"><span class="choice-letter" aria-hidden="true">'+"ABC"[i]+'</span><span '+(asDigits?'':'lang="en"')+'>'+(asDigits?digital(t)+" Uhr":words(t))+'</span></button>').join("")+'</div>';
@@ -105,8 +105,9 @@ function game(){
 }
 function workshop(){
   return hero("Uhrenwerkstatt","Drehe die Zeiger. Die Uhr spricht deine Zeit auf Englisch.")+'<div class="play-grid">'+panel(data.work,{editable:true,title:"Deine Uhr"})+
-    '<section class="exercise-card workshop-card"><h2>Deine Wunschzeit</h2><p>Zieh den kurzen und den langen Zeiger mit dem Finger. Lass los und hör dir deine Uhrzeit an.</p>'+
-    '<div class="target"><strong>'+digital(data.work)+' Uhr</strong><span lang="en">'+words(data.work)+'</span></div>'+handControls(workshopHand)+audioButtons("Noch einmal hören")+
+    '<section class="exercise-card workshop-card"><h2>Deine Wunschzeit</h2><p>Zieh den langen Zeiger von Strich zu Strich. Jeder Strich zählt eine Minute. Lass los und hör dir die Zeit an.</p>'+
+    '<div class="target"><strong>'+clock24(data.work)+' Uhr</strong><span lang="en">'+words(data.work)+'</span></div>'+handControls(workshopHand)+audioButtons("Noch einmal hören")+
+    '<h3>Wenn beide Zeiger auf zwölf stehen</h3><p>Um 00:00 Uhr beginnt ein neuer Tag: <span lang="en">midnight</span>. Zwölf Stunden später ist Mittag: <span lang="en">noon</span>. <span lang="en">High noon</span> bedeutet genau zwölf Uhr mittags.</p><div class="entry-actions">'+btn("midnight","00:00 · Midnight")+btn("noon","12:00 · Noon")+'</div>'+
     roomLink("spielplatz","Ablesen und Zeichnen üben","primary")+'</section></div>'+roomLink("raeume","Alle Lernräume","secondary back");
 }
 function stage(){
@@ -205,14 +206,19 @@ function nextStageTime(){
   }
   data.stage=shuffle(candidates)[0];data.phase=0;
 }
+function advanceWorkshop(t,delta){
+  const total=((t.h%12+(t.pm?12:0))*60+t.m+delta+1440)%1440;
+  t.h=normHour(Math.floor(total/60));t.m=total%60;t.pm=total>=720;
+}
 function shiftHand(q,step){
+  if(state.page==="werkstatt"){advanceWorkshop(q.draw,step*(q.hand==="hour"?60:1));return;}
   if(q.hand==="hour"){q.draw.h=normHour(q.draw.h+step);return;}
   const m=q.draw.m+step*5;
   q.draw.h=normHour(q.draw.h+Math.floor(m/60));q.draw.m=(m+60)%60;
 }
 function updateHands(q){
   $("hands").innerHTML=hands(q.draw);
-  $("dialDesc").textContent="Kurzer Zeiger auf Stunde "+q.draw.h+", langer Zeiger auf "+(q.draw.m/5||12)+".";
+  $("dialDesc").textContent="Kurzer Zeiger auf Stunde "+q.draw.h+", Minuten: "+q.draw.m+".";
 }
 function finishDraw(q){
   if(q.feedback)q.feedback="";
@@ -253,7 +259,13 @@ function bindDrawing(){
     moved=true;
     const angle=(Math.atan2(x,-y)*180/Math.PI+360)%360;
     const before=digital(q.draw);
-    if(q.hand==="hour")q.draw.h=normHour(Math.round(angle/30));
+    if(state.page==="werkstatt"){
+      const hour=q.hand==="hour";
+      let delta=hour?Math.round(angle/30)%12-q.draw.h%12:Math.round(angle/6)%60-q.draw.m;
+      const cycle=hour?12:60;
+      if(grab && Math.abs(delta)>cycle/2)delta-=Math.sign(delta)*cycle;
+      advanceWorkshop(q.draw,delta*(hour?60:1));
+    }else if(q.hand==="hour")q.draw.h=normHour(Math.round(angle/30));
     else q.draw.m=Math.round(angle/30)%12*5;
     if(digital(q.draw)!==before){changed=true;updateHands(q);}
   }
@@ -362,6 +374,9 @@ document.addEventListener("click",e=>{
   if(d.hand && drawing()){if(state.page==="werkstatt")workshopHand=d.hand;else q.hand=d.hand;render();save();return;}
   if(d.mode && kinds.includes(d.mode)){clearAudio();state.mode=d.mode;render();save();return;}
   switch(action){
+    case "noon":case "midnight":
+      if(state.page==="werkstatt"){Object.assign(data.work,{h:12,m:0,pm:action==="noon"});finishDraw(drawing());}
+      break;
     case "listen":case "slow":listen(action==="slow");break;
     case "check":check();break;
     case "tip":help();break;
