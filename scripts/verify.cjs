@@ -22,7 +22,7 @@ const env = {
     speechSynthesis:{cancel(){},getVoices:()=>[{lang:"en-GB",localService:true}],speak:u=>speech.push(u)}},
   assert,playback,speech
 };
-const scripts=["suncalc","sky","clock","learning","audio","app"].map(name=>fs.readFileSync("docs/"+name+".js","utf8"));
+const scripts=["suncalc","sky","weather","clock","learning","audio","app"].map(name=>fs.readFileSync("docs/"+name+".js","utf8"));
 vm.runInNewContext(scripts.join("\n"),env);
 vm.runInNewContext(`
 assert.equal(scoreTotal(),2);
