@@ -141,6 +141,8 @@ dragHand(0,-81,0,81);
 assert.equal(digital(data.work),"12:30");
 dragHand(15,-57,59,0);
 assert.equal(digital(data.work),"3:30");
+dragHand(0,76,0,76);
+assert.equal(digital(data.work),"6:30");
 resetDevice();assert.equal(scoreTotal(),0);assert.deepEqual(Object.keys(loadLearning().history),[]);
 assert.equal(loadLearning().last,null);
 `,env);
